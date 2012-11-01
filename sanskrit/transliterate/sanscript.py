@@ -50,10 +50,13 @@ class SchemeMap(object):
         """Create a mapping from `from_scheme` to `to_scheme`."""
         self.marks = {}
         self.virama = {}
+        self.vowels = {}
         self.consonants = {}
         self.other = {}
         self.from_roman = from_scheme.is_roman
         self.to_roman = to_scheme.is_roman
+        self.longest = max(len(x) for g in from_scheme
+                                  for x in from_scheme[g])
 
         for group in from_scheme:
             if group not in to_scheme:
@@ -68,6 +71,8 @@ class SchemeMap(object):
                 self.other.update(sub_map)
                 if group.endswith('consonants'):
                     self.consonants.update(sub_map)
+                elif group.endswith('vowels'):
+                    self.vowels.update(sub_map)
 
 
 def _roman(data, scheme_map):
@@ -78,7 +83,68 @@ def _roman(data, scheme_map):
     :param scheme_map: a dict that maps between characters in the old scheme
                        and characters in the new scheme
     """
+    vowels = scheme_map.vowels
+    marks = scheme_map.marks
+    virama = scheme_map.virama
+    consonants = scheme_map.consonants
+    other = scheme_map.other
+    longest = scheme_map.longest
+
     buf = []
+    i = 0
+    had_consonant = found = False
+    len_data = len(data)
+    append = buf.append
+
+    while i <= len_data:
+        # The longest token in the source scheme has length `longest`. Iterate
+        # over `data` while taking `longest` characters at a time. If we don`t
+        # find the character group in our scheme map, lop off a character and
+        # try again.
+        #
+        # If we've finished reading through `data`, then `token` will be empty
+        # and the loop below will be skipped.
+        token = data[i:i+longest]
+
+        while token:
+            # Catch the pattern CV, where C is a consonant and V is a vowel.
+            # V should be rendered as a vowel mark, a.k.a. a "dependent"
+            # vowel. But due to the nature of Brahmic scripts, 'a' is implicit
+            # and has no vowel mark. If we see 'a', add nothing.
+            if had_consonant and token in vowels:
+                append(marks.get(token, ''))
+                found = True
+
+            # Catch any other character, including consonants, punctuation,
+            # and regular vowels. Due to the implicit 'a', we must explicitly
+            # end any lingering consonants before we can handle the current
+            # token.
+            elif token in other:
+                if had_consonant:
+                    append(virama[''])
+                append(other[token])
+                found = True
+
+            if found:
+                had_consonant = token in consonants
+                i += len(token)
+                break
+            else:
+                token = token[:-1]
+
+        # We've exhausted the token; this must be some other character. Due to
+        # the implicit 'a', we must explicitly end any lingering consonants
+        # before we can handle the current token.
+        if not found:
+            if had_consonant:
+                append(virama[''])
+            if i < len_data:
+                append(data[i])
+                had_consonant = False
+            i += 1
+
+        found = False
+
     return ''.join(buf)
 
 def _brahmic(data, scheme_map):
@@ -89,10 +155,10 @@ def _brahmic(data, scheme_map):
     :param scheme_map: a dict that maps between characters in the old scheme
                        and characters in the new scheme
     """
-    other = scheme_map.other
     marks = scheme_map.marks
-    consonants = scheme_map.consonants
     virama = scheme_map.virama
+    consonants = scheme_map.consonants
+    other = scheme_map.other
     to_roman = scheme_map.to_roman
 
     buf = []
