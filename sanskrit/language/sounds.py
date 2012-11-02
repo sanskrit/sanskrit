@@ -29,13 +29,81 @@ RETROFLEXES = set('wWqQRz')
 VOICED_SOUNDS = set('aAiIuUfFxXeEoOgGNjJYqQRdDnbBmyrlvh')
 VALID_FINALS = set('aAiIuUfeEoOkwtpNnmsr')
 
+# General functions
+# -----------------
 
-def clean(phrase, valid=ALL):
-    """Remove all characters that are not in `valid`."""
+def clean(phrase, valid=None):
+    """Remove all characters from `phrase` that are not in `valid`.
+
+    :param phrase: the phrase to clean
+    :param valid: the set of valid characters. By default, this includes
+                  all letters in the SLP1 alphabet, as well as ``'``, ``~``,
+                  and the space character.
+    """
+    valid = valid or ALL
     return ''.join([L for L in phrase if L in valid])
 
+
+# Letter transformations
+# ----------------------
+
+data = {
+    'aspirate': dict(zip('kgcjwqtdpb', 'KGCJWQTDPB')),
+    'deaspirate': dict(zip('KGCJWQTDPB', 'kgcjwqtdpb')),
+    'voice': dict(zip('kKcCwWtTpP', 'gGjJqQdDbB')),
+    'devoice': dict(zip('gGjJqQdDbB', 'kKcCwWtTpP')),
+    'nasalize': dict(zip('kKgGhcCjJwWqQtTdDpPbB', 'NNNNNYYYYRRRRnnnnmmmm')),
+    'dentalize': dict(zip('wWqQRz', 'tTdDns')),
+    'simplify': dict(zip('kgGNhjtTdDpPbBnmsrH', 'kkkkkwttttppppnmH'))
+}
+
+def letter_transform(name, docstring=None):
+    transform_map = data[name]
+    def func(letter):
+        return transform_map.get(letter, letter)
+
+    if docstring is None:
+        docstring = """{0} `letter`. If this is not possible, return `letter`
+        unchanged.
+
+        :param letter: the letter to {1}
+        """.format(name.capitalize(), name)
+
+    func.__name__ = name
+    func.__doc__ = docstring
+    return func
+
+aspirate = letter_transform('aspirate')
+deaspirate = letter_transform('deaspirate')
+voice = letter_transform('voice')
+devoice = letter_transform('devoice')
+nasalize = letter_transform('nasalize')
+dentalize = letter_transform('dentalize')
+simplify = letter_transform('simplify',
+    docstring="""
+    Simplify the given letter, if possible.
+
+    Here, to "simplify" a letter is to reduce it to a sound that is permitted
+    to end a Sanskrit word. For instance, the `c` in `vAc` should be reduced
+    to `k`::
+
+        assert simplify('c') == 'k'
+
+    :param letter: the letter to simplify
+    """
+)
+
+del data, letter_transform
+
+
+# Meter and metrical properties
+# -----------------------------
+
 def num_syllables(phrase):
-    """Count the number of syllables in `phrase`."""
+    """Find the number of syllables in `phrase`.
+
+    :param phrase: the phrase to test
+    """
     return sum(1 for L in phrase if L in VOWELS )
 
 def meter(phrase, heavy='_', light='.'):

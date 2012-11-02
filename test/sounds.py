@@ -18,6 +18,50 @@ class CleanTestCase(TestCase):
         self.assertEqual('kTmdm', func('ka!!!Tamida23m//', sounds.CONSONANTS))
 
 
+class TransformTestCase(TestCase):
+    def test_aspirate(self):
+        func = sounds.aspirate
+        self.assertEqual('K', func('k'))
+        self.assertEqual('J', func('J'))
+        self.assertEqual('a', func('a'))
+
+    def test_deaspirate(self):
+        func = sounds.deaspirate
+        self.assertEqual('k', func('k'))
+        self.assertEqual('j', func('J'))
+        self.assertEqual('a', func('a'))
+
+    def test_voice(self):
+        func = sounds.voice
+        self.assertEqual('b', func('p'))
+        self.assertEqual('Q', func('Q'))
+        self.assertEqual('a', func('a'))
+
+    def test_devoice(self):
+        func = sounds.devoice
+        self.assertEqual('k', func('k'))
+        self.assertEqual('C', func('J'))
+        self.assertEqual('a', func('a'))
+
+    def test_nasalize(self):
+        func = sounds.nasalize
+        self.assertEqual('N', func('k'))
+        self.assertEqual('m', func('p'))
+        self.assertEqual('a', func('a'))
+
+    def test_dentalize(self):
+        func = sounds.dentalize
+        self.assertEqual('t', func('w'))
+        self.assertEqual('s', func('z'))
+        self.assertEqual('a', func('a'))
+
+    def test_simplify(self):
+        func = sounds.simplify
+        self.assertEqual('k', func('G'))
+        self.assertEqual('w', func('j'))
+        self.assertEqual('a', func('a'))
+
+
 class NumSyllablesTestCase(TestCase):
 
     def test_simple(self):
