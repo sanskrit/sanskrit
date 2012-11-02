@@ -3,22 +3,78 @@
 sanskrit.transliterate.sanscript
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Transliteration functions for Sanskrit.
+Transliteration functions for Sanskrit. The most important function is
+:func:`transliterate`, which is very easy to use::
+
+    output = transliterate(data, IAST, DEVANAGARI)
+
+By default, the module supports the following scripts:
+
+- Bengali_
+- Devanagari_
+- Gujarati_
+- Kannada_
+- Malayalam_
+- Telugu_
+
+and the following romanizations:
+
+- Harvard-Kyoto_
+- IAST_ (also known as Roman Unicode)
+- SLP1
+
+Each of these **schemes** is defined in a global dictionary `SCHEMES`, whose
+keys are strings::
+
+    devanagari_scheme = SCHEMES['devanagari']
+
+For convenience, we also define a variable for each scheme::
+
+    devanagari_scheme = SCHEMES[DEVANAGARI]
+
+These variables are documented below.
 
 :license: MIT and BSD
+
+.. _Bengali: http://en.wikipedia.org/wiki/Bengali_alphabet
+.. _Devanagari: http://en.wikipedia.org/wiki/Devanagari
+.. _Gujarati: http://en.wikipedia.org/wiki/Gujarati_alphabet
+.. _Kannada: http://en.wikipedia.org/wiki/Kannada_alphabet
+.. _Malayalam: http://en.wikipedia.org/wiki/Malayalam_alphabet
+.. _Telugu: http://en.wikipedia.org/wiki/Telugu_alphabet
+
+.. _Harvard-Kyoto: http://en.wikipedia.org/wiki/Harvard-Kyoto
+.. _IAST: http://en.wikipedia.org/wiki/IAST
 """
 
 from __future__ import unicode_literals
 
+#: Internal name of Bengali. Bengali ``ba`` and ``va`` are both rendered
+#: as `ব`.
 BENGALI = 'bengali'
+
+#: Internal name of Devanagari.
 DEVANAGARI = 'devanagari'
+
+#: Internal name of Gujarati.
 GUJARATI = 'gujarati'
+
+#: Internal name of Kannada.
 KANNADA = 'kannada'
+
+#: Internal name of Malayalam.
 MALAYALAM = 'malayalam'
+
+#: Internal name of Telugu.
 TELUGU = 'telugu'
 
+#: Internal name of Harvard-Kyoto.
 HK = 'hk'
+
+#: Internal name of IAST.
 IAST = 'iast'
+
+#: Internal name of SLP1.
 SLP1 = 'slp1'
 
 SCHEMES = {}
@@ -28,19 +84,21 @@ class Scheme(dict):
     to storing whether or not a scheme is roman, :class:`Scheme` partitions
     a scheme's characters into important functional groups.
 
+    :class:`Scheme` is just a subclass of :class:`dict`.
+
     :param data: a :class:`dict` of initial values.
     :param is_roman: `True` if the scheme is a romanization and `False`
                      otherwise.
     """
 
-    def __init__(self, data=None, is_roman=True, ):
+    def __init__(self, data=None, is_roman=True):
         super(Scheme, self).__init__(data or {})
         self.is_roman = is_roman
 
 
 class SchemeMap(object):
     """Maps one :class:`Scheme` to another. This class grabs the metadata and
-    character data required to run transliteration.
+    character data required for :func:`transliterate`.
 
     :param from_scheme: the source scheme
     :param to_scheme: the destination scheme
@@ -50,6 +108,7 @@ class SchemeMap(object):
         """Create a mapping from `from_scheme` to `to_scheme`."""
         self.marks = {}
         self.virama = {}
+
         self.vowels = {}
         self.consonants = {}
         self.other = {}
