@@ -31,6 +31,10 @@ class SimpleBase(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
 
+    def __repr__(self):
+        cls = self.__class__.__name__
+        return "%s(%r, %r)" % (cls, self.id, self.name)
+
 
 # Enumerations
 # ------------
