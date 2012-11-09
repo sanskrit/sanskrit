@@ -66,6 +66,7 @@ class Context(object):
         default = self.config.setdefault
         join = os.path.join
         default('MONIER_XML_PATH', join(DATA_PATH, 'mw', 'monier.xml'))
+        default('SANDHI_DATA', join(DATA_PATH, 'misc', 'sandhi.yml'))
 
         self.engine = create_engine(self.config['DATABASE_URI'])
         self.session_class = scoped_session(sessionmaker(autocommit=False,

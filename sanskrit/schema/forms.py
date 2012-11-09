@@ -1,39 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-sanskrit.db.schema
-~~~~~~~~~~~~~~~~~~
+sanskrit.schema.forms
+~~~~~~~~~~~~~~~~~~~~~
 
-Schema for all Sanskrit data.
+Schema for Sanskrit forms.
 """
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
-
-# Base classes
-# ------------
-Base = declarative_base()
-
-class SimpleBase(Base):
-
-    """A simple default base class. This automatically creates a table name,
-    a primary key, and a `name` field for some payload.
-    """
-
-    __abstract__ = True
-
-    @declared_attr
-    def __tablename__(cls):
-        return cls.__name__.lower()
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-
-    def __repr__(self):
-        cls = self.__class__.__name__
-        return "%s(%r, %r)" % (cls, self.id, self.name)
+from .base import Base, SimpleBase
 
 
 # Enumerations

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-test.schema
-~~~~~~~~~~~
+test.forms
+~~~~~~~~~~
 
 Tests linguistic schema on various data.
 
@@ -25,8 +25,9 @@ class SchemaTestCase(TestCase):
     def setUp(self):
         """Create a new database."""
         self.ctx = Context(cfg)
-        S.run(self.ctx)
         self.session = self.ctx.session_class()
+        S.create_tables(self.ctx)
+        S.add_enums(self.session, self.ctx)
 
     def add_root(self, name):
         """Add a root with the given name.

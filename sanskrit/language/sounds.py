@@ -43,6 +43,14 @@ def clean(phrase, valid=None):
     valid = valid or ALL
     return ''.join([L for L in phrase if L in valid])
 
+def key_fn(s):
+    """Sorting function for Sanskrit words in SLP1."""
+    returned = []
+    sa = "aAiIuUfFxXeEoOMHkKgGNcCjJYwWqQRtTdDnpPbBmyrlvSzsh '~"
+    en = "123ABCDEFGHIJKLMNOPQRSTUVWabcdefghijklmnopqrstuvwxyz"
+    mapper = dict(zip(sa, en))
+    mapped = map(mapper.__getitem__, [x for x in s if x in ALL])
+    return ''.join(mapped)
 
 # Letter transformations
 # ----------------------
