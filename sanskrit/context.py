@@ -62,11 +62,14 @@ class Context(object):
                 if key.isupper():
                     self.config[key] = getattr(config, key)
 
-        DATA_PATH = self.config['DATA_PATH']
-        default = self.config.setdefault
-        join = os.path.join
-        default('MONIER_XML_PATH', join(DATA_PATH, 'mw', 'monier.xml'))
-        default('SANDHI_DATA', join(DATA_PATH, 'misc', 'sandhi.yml'))
+        def default(name, *args):
+            path = os.path.join(self.config['DATA_PATH'], *args)
+            self.config.setdefault(name, path)
+
+        default('MONIER_XML_PATH', 'mw', 'monier.xml')
+        default('SANDHI_DATA', 'misc', 'sandhi.yml')
+        default('PRONOUN_DATA', 'misc', 'pronouns.yml')
+        default('VERB_PREFIX_DATA', 'misc', 'verb-prefixes.yml')
 
         self.engine = create_engine(self.config['DATABASE_URI'])
         self.session_class = scoped_session(sessionmaker(autocommit=False,
