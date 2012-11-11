@@ -5,9 +5,12 @@ sanskrit.db.setup
 Setup code for various Sanskrit data.
 """
 
-import yaml
 import xml.etree.ElementTree as ET
+
+import yaml
+
 from sanskrit.schema import *
+from sanskrit import util
 
 NOMINAL_MAPPER = {
     'm': Gender.MASCULINE,
@@ -31,15 +34,6 @@ NOMINAL_MAPPER = {
     'p': Number.PLURAL
     }
 
-def heading(s):
-    """Print `s` as a heading."""
-    print s
-    print '-' * len(s)
-
-def log(s):
-    """Print `s` as a list item."""
-    print ' -', s
-
 def add_enums(session, ctx):
     """Add enumerated data to the database. Among others, this includes:
 
@@ -54,7 +48,7 @@ def add_enums(session, ctx):
     """
     for cls in [Tag, Modification, VClass, Person, Number, Mode, Voice,
                 Gender, Case, SandhiType]:
-        log(cls.__name__)
+        util.tick(cls.__name__)
         for key in dir(cls):
             if key.isupper():
                 id = getattr(cls, key)
@@ -74,7 +68,7 @@ def add_sandhi(session, ctx):
     with open(ctx.config['SANDHI_DATA']) as f:
         for ruleset in yaml.load_all(f):
             rule_type = ruleset['type']
-            log(rule_type)
+            util.tick(rule_type)
             for rule in ruleset['rules']:
                 rule['rule_type'] = mapper[rule_type]
                 s = SandhiRule(**rule)
@@ -87,7 +81,7 @@ def add_verb_prefixes(session, ctx):
     """Add verb prefixes to the database."""
     with open(ctx.config['VERB_PREFIX_DATA']) as f:
         for group in yaml.load_all(f):
-            log(group['name'])
+            util.tick(group['name'])
             for item in group['items']:
                 prefix = VerbPrefix(name=item)
                 session.add(prefix)
@@ -103,7 +97,7 @@ def add_pronouns(session, ctx):
             stem = PronounStem(name=pronoun['stem'], gender_id=gender_id)
             session.add(stem)
             session.flush()
-            log(stem.name)
+            util.tick(stem.name)
 
             for item in pronoun['forms']:
                 name = item['name']
@@ -134,6 +128,6 @@ def run(ctx):
         ]
 
     for name, f in functions:
-        heading(name)
+        util.heading(name)
         f(session, ctx)
         print

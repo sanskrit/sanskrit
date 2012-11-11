@@ -9,7 +9,7 @@ Sandhi operations.
 """
 
 from sanskrit.schema import SandhiRule
-from sanskrit.util.trie import HashTrie
+from sanskrit.util import HashTrie
 
 class Exempt(unicode):
 
