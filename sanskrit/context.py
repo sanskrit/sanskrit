@@ -66,11 +66,22 @@ class Context(object):
             path = os.path.join(self.config['DATA_PATH'], *args)
             self.config.setdefault(name, path)
 
+        default('ADJECTIVE_DATA', 'nominal', 'adjectives.yml')
+        default('INDECLINABLE_DATA', 'misc', 'indeclinables.yml')
+        default('IRREGULAR_NOMINAL_DATA', 'nominal', 'irregular.yml')
         default('MONIER_XML_PATH', 'mw', 'monier.xml')
+        default('NOUN_DATA', 'nominal', 'nouns.yml')
+        default('PREFIXED_ROOT_DATA', 'verbal', 'prefixed-roots.yml')
+        default('PRONOUN_DATA', 'nominal', 'pronouns.yml')
+        default('ROOT_DATA', 'verbal', 'roots.yml')
         default('SANDHI_DATA', 'misc', 'sandhi.yml')
-        default('PRONOUN_DATA', 'misc', 'pronouns.yml')
         default('VERB_PREFIX_DATA', 'misc', 'verb-prefixes.yml')
+        default('VERB_STEM_DATA', 'verbal', 'stems.yml')
 
+        if 'DATABASE_URI' in self.config:
+            self.connect()
+
+    def connect(self):
         self.engine = create_engine(self.config['DATABASE_URI'])
         self.session_class = scoped_session(sessionmaker(autocommit=False,
                                                          autoflush=False,
