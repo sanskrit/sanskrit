@@ -43,7 +43,7 @@ class Sandhi(object):
 
         :param ctx: the current :class:`~sanskrit.context.Context`.
         """
-        self.add_rules(self._query(ctx))
+        self.add_rules(*self._query(ctx))
 
     def _query(self, ctx):
         """Query for :class:`SandhiRule`s and yield each as a
@@ -52,9 +52,9 @@ class Sandhi(object):
         for rule in session.query(SandhiRule):
             yield (rule.first, rule.second, rule.result)
 
-    def add_rules(self, rules):
-        """Add rules for splitting and joining words. Rules should be tuples
-        containing:
+    def add_rules(self, *rules):
+        """Add rules for splitting and joining words. Rules should be ordered
+        collections that contain:
         
         - the first part of the combination
         - the second part of the combination
@@ -64,7 +64,7 @@ class Sandhi(object):
 
             rule = ('a', 'i', 'e')
 
-        :param rules: a collection of tuples
+        :param rules: a list of rules
         """
         for first, second, result in rules:
             self.joiner[(first, second)] = result
