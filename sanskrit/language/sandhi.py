@@ -160,3 +160,14 @@ class Sandhi(object):
             
         # Non-split: yield the chunk as-is.
         yield (chunk, '')
+
+    def split_off(self, chunk, fragment):
+        """Remove `fragment` from the end of `chunk` and yield the results.
+        If `fragment` cannot be found, yield nothing.
+
+        :param chunk: the phrase to split
+        :param fragment: the phrase to split off
+        """
+        for before, after in self.splits(chunk):
+            if after == fragment:
+                yield before
