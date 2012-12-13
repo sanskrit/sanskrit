@@ -110,7 +110,9 @@ DATA = {
     }
 }
 
+
 class SanscriptTestCase(TestCase):
+
     """Ordinary :class:`~unittest.TestCase` with some helper data."""
 
     roman = {S.HK, S.IAST, S.SLP1}
@@ -182,4 +184,3 @@ class BrahmicTests(SanscriptTestCase):
         _from = S.DEVANAGARI
         for _to in self.brahmic:
             self.compare_all(_from, _to)
-

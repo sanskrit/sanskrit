@@ -49,6 +49,8 @@ These variables are documented below.
 
 from __future__ import unicode_literals
 
+# Brahmic schemes
+# ---------------
 #: Internal name of Bengali. Bengali ``ba`` and ``va`` are both rendered
 #: as `ব`.
 BENGALI = 'bengali'
@@ -59,25 +61,52 @@ DEVANAGARI = 'devanagari'
 #: Internal name of Gujarati.
 GUJARATI = 'gujarati'
 
+#: Internal name of Gurmukhi.
+GURMUKHI = 'gurmukhi'
+
 #: Internal name of Kannada.
 KANNADA = 'kannada'
 
 #: Internal name of Malayalam.
 MALAYALAM = 'malayalam'
 
+#: Internal name of Oriya.
+ORIYA = 'oriya'
+
+#: Internal name of Tamil.
+TAMIL = 'tamil'
+
 #: Internal name of Telugu.
 TELUGU = 'telugu'
 
+#: Internal name of Telugu.
+TELUGU = 'telugu'
+
+# Roman schemes
+# -------------
 #: Internal name of Harvard-Kyoto.
 HK = 'hk'
 
 #: Internal name of IAST.
 IAST = 'iast'
 
+#: Internal name of ITRANS
+ITRANS = 'itrans'
+
+#: Internal name of ITRANS
+KOLKATA = 'kolkata'
+
 #: Internal name of SLP1.
 SLP1 = 'slp1'
 
+#: Internal name of Velthuis.
+VELTHUIS = 'velthuis'
+
+#: Internal name of WX.
+WX = 'wx'
+
 SCHEMES = {}
+
 
 class Scheme(dict):
     """Represents all of the data associated with a given scheme. In addition
@@ -206,6 +235,7 @@ def _roman(data, scheme_map):
 
     return ''.join(buf)
 
+
 def _brahmic(data, scheme_map):
     """Transliterate `data` with the given `scheme_map`. This function is used
     when the source scheme is a Brahmic scheme.
@@ -239,6 +269,7 @@ def _brahmic(data, scheme_map):
         append('a')
     return ''.join(buf)
 
+
 def transliterate(data, _from=None, _to=None, scheme_map=None):
     """Transliterate `data` with the given parameters::
 
@@ -268,6 +299,7 @@ def transliterate(data, _from=None, _to=None, scheme_map=None):
         return _roman(data, scheme_map)
     else:
         return _brahmic(data, scheme_map)
+
 
 def _setup():
     """Add a variety of default schemes."""
