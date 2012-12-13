@@ -165,7 +165,7 @@ class SchemeMap(object):
 
 def _roman(data, scheme_map):
     """Transliterate `data` with the given `scheme_map`. This function is used
-    when the source scheme is not a Brahmic scheme.
+    when the source scheme is a Roman scheme.
 
     :param data: the data to transliterate
     :param scheme_map: a dict that maps between characters in the old scheme
@@ -177,6 +177,7 @@ def _roman(data, scheme_map):
     consonants = scheme_map.consonants
     other = scheme_map.other
     longest = scheme_map.longest
+    to_roman = scheme_map.to_roman
 
     buf = []
     i = 0
@@ -200,7 +201,11 @@ def _roman(data, scheme_map):
             # vowel. But due to the nature of Brahmic scripts, 'a' is implicit
             # and has no vowel mark. If we see 'a', add nothing.
             if had_consonant and token in vowels:
-                append(marks.get(token, ''))
+                mark = marks.get(token, '')
+                if mark:
+                    append(mark)
+                elif to_roman:
+                    append(vowels[token])
                 found = True
 
             # Catch any other character, including consonants, punctuation,

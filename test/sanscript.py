@@ -155,12 +155,13 @@ class GeneralTests(SanscriptTestCase):
 
 
 class RomanTests(SanscriptTestCase):
+
     """Test transliteration from a roman scheme."""
 
     def test_to_roman(self):
         """Test roman to roman."""
         for _from in self.roman:
-            for _to in self.brahmic:
+            for _to in self.roman:
                 self.compare_all(_from, _to)
 
     def test_to_brahmic(self):
@@ -171,6 +172,7 @@ class RomanTests(SanscriptTestCase):
 
 
 class BrahmicTests(SanscriptTestCase):
+
     """Test transliteration from a Brahmic scheme."""
 
     def test_to_roman(self):
