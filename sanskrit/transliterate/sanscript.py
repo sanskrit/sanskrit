@@ -185,6 +185,12 @@ def _roman(data, scheme_map):
     len_data = len(data)
     append = buf.append
 
+    # If true, don't transliterate. The toggle token is discarded.
+    toggled = False
+    # If true, don't transliterate. The suspend token is retained.
+    # `suspended` overrides `toggled`.
+    suspended = False
+
     while i <= len_data:
         # The longest token in the source scheme has length `longest`. Iterate
         # over `data` while taking `longest` characters at a time. If we don`t
@@ -196,6 +202,19 @@ def _roman(data, scheme_map):
         token = data[i:i+longest]
 
         while token:
+            if token == '##':
+                toggled = not toggled
+                i += 2  # skip over the token
+                found = True  # force the token to fill up again
+                break
+
+            if token in '<>':
+                suspended = not suspended
+
+            if toggled or suspended:
+                token = token[:-1]
+                continue
+
             # Catch the pattern CV, where C is a consonant and V is a vowel.
             # V should be rendered as a vowel mark, a.k.a. a "dependent"
             # vowel. But due to the nature of Brahmic scripts, 'a' is implicit
@@ -300,10 +319,8 @@ def transliterate(data, _from=None, _to=None, scheme_map=None):
         to_scheme = SCHEMES[_to]
         scheme_map = SchemeMap(from_scheme, to_scheme)
 
-    if scheme_map.from_roman:
-        return _roman(data, scheme_map)
-    else:
-        return _brahmic(data, scheme_map)
+    func = _roman if scheme_map.from_roman else _brahmic
+    return func(data, scheme_map)
 
 
 def _setup():

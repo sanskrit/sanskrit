@@ -121,7 +121,8 @@ class SanscriptTestCase(TestCase):
     def compare_all(self, _from, _to):
         """Compare all data for `_from` and `_to`"""
         for group in DATA[_from]:
-            self.compare(_from, _to, group)
+            if group in DATA[_to]:
+                self.compare(_from, _to, group)
 
     def compare(self, _from, _to, group):
         """Compare data for `_from` and `_to` in the test group `group`."""
@@ -133,7 +134,7 @@ class SanscriptTestCase(TestCase):
         self.assertEqual(expected, actual)
 
 
-class GeneralTests(SanscriptTestCase):
+class GeneralTestCase(SanscriptTestCase):
     """Test that the default scemes were set up as expected."""
 
     def test_membership(self):
@@ -154,7 +155,7 @@ class GeneralTests(SanscriptTestCase):
                 self.assertEqual(len(scheme[group]), len(dev[group]))
 
 
-class RomanTests(SanscriptTestCase):
+class RomanTestCase(SanscriptTestCase):
 
     """Test transliteration from a roman scheme."""
 
@@ -171,7 +172,7 @@ class RomanTests(SanscriptTestCase):
                 self.compare_all(_from, _to)
 
 
-class BrahmicTests(SanscriptTestCase):
+class BrahmicTestCase(SanscriptTestCase):
 
     """Test transliteration from a Brahmic scheme."""
 
@@ -186,3 +187,31 @@ class BrahmicTests(SanscriptTestCase):
         _from = S.DEVANAGARI
         for _to in self.brahmic:
             self.compare_all(_from, _to)
+
+
+class ToggleTestCase(SanscriptTestCase):
+
+    """Test suspending then resuming transliteration."""
+
+    def t_helper(self, _from, _to):
+        def func(input, output):
+            self.assertEqual(output, S.transliterate(input, _from, _to))
+        return func
+
+    def test_toggle(self):
+        f = self.t_helper(S.HK, S.DEVANAGARI)
+        f('akSa##kSa##ra', 'अक्षkSaर')
+        f('##akSa##kSa##ra', 'akSaक्षra')
+        f('akSa##ra##', 'अक्षra')
+        f('akSa##ra', 'अक्षra')
+        f('akSa##kSa##ra####', 'अक्षkSaर')
+        f('a####kSara', 'अक्षर')
+        f('a#kSara', 'अ#क्षर')
+
+    def test_suspend(self):
+        f = self.t_helper(S.HK, S.DEVANAGARI)
+        f('<p>nara iti</p>', '<p>नर इति</p>')
+
+    def test_suspend_and_toggle(self):
+        f = self.t_helper(S.HK, S.DEVANAGARI)
+        f('<p>##na##ra## iti</p>', '<p>naर iti</p>')
