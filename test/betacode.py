@@ -27,6 +27,7 @@ class BetaTestCase(TestCase):
             ('προϊέναι', 'PROI+E/NAI'),
             ('τῷ', 'TW=|'),
             ('μοῦσα', 'MOU=SA'),
+            ('χέϝω', 'XE/VW'),
             ('μῆνιν ἄειδε θεὰ Πηληϊάδεω Ἀχιλῆος',
                 "MH=NIN A)/EIDE QEA\ *PHLHI+A/DEW *)AXILH=OS"),
         ]

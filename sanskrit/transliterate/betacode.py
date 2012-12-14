@@ -102,6 +102,7 @@ def beta2unicodeTrie():
     t["*X"] = "\u03A7"
     t["*Y"] = "\u03A8"
     t["*W"] = "\u03A9"
+    t["*V"] = "\u03DC"
 
     t["A"] = "\u03B1"
     t["B"] = "\u03B2"
@@ -137,6 +138,7 @@ def beta2unicodeTrie():
     t["X"] = "\u03C7"
     t["Y"] = "\u03C8"
     t["W"] = "\u03C9"
+    t["V"] = "\u03DD"
 
     t["I+"] = "\u03CA"
     t["U+"] = "\u03CB"
