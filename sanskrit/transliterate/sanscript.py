@@ -163,7 +163,7 @@ class SchemeMap(object):
                     self.vowels.update(sub_map)
 
 
-def _roman(data, scheme_map):
+def _roman(data, scheme_map, **kw):
     """Transliterate `data` with the given `scheme_map`. This function is used
     when the source scheme is a Roman scheme.
 
@@ -178,6 +178,12 @@ def _roman(data, scheme_map):
     other = scheme_map.other
     longest = scheme_map.longest
     to_roman = scheme_map.to_roman
+
+    togglers = kw.pop('togglers', set())
+    suspend_on = kw.pop('suspend_on', set())
+    suspend_off = kw.pop('suspend_off', set())
+    if kw:
+        raise TypeError('Unexpected keyword argument %s' % kw.keys()[0])
 
     buf = []
     i = 0
@@ -202,14 +208,16 @@ def _roman(data, scheme_map):
         token = data[i:i+longest]
 
         while token:
-            if token == '##':
+            if token in togglers:
                 toggled = not toggled
                 i += 2  # skip over the token
                 found = True  # force the token to fill up again
                 break
 
-            if token in '<>':
-                suspended = not suspended
+            if token in suspend_on:
+                suspended = True
+            elif token in suspend_off:
+                suspended = False
 
             if toggled or suspended:
                 token = token[:-1]
@@ -260,7 +268,7 @@ def _roman(data, scheme_map):
     return ''.join(buf)
 
 
-def _brahmic(data, scheme_map):
+def _brahmic(data, scheme_map, **kw):
     """Transliterate `data` with the given `scheme_map`. This function is used
     when the source scheme is a Brahmic scheme.
 
@@ -294,7 +302,7 @@ def _brahmic(data, scheme_map):
     return ''.join(buf)
 
 
-def transliterate(data, _from=None, _to=None, scheme_map=None):
+def transliterate(data, _from=None, _to=None, scheme_map=None, **kw):
     """Transliterate `data` with the given parameters::
 
         output = transliterate('idam adbhutam', HK, DEVANAGARI)
@@ -319,8 +327,15 @@ def transliterate(data, _from=None, _to=None, scheme_map=None):
         to_scheme = SCHEMES[_to]
         scheme_map = SchemeMap(from_scheme, to_scheme)
 
+    options = {
+        'togglers': set(['##']),
+        'suspend_on': set('<'),
+        'suspend_off': set('>')
+        }
+    options.update(kw)
+
     func = _roman if scheme_map.from_roman else _brahmic
-    return func(data, scheme_map)
+    return func(data, scheme_map, **options)
 
 
 def _setup():
