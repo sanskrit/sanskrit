@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-test.forms
-~~~~~~~~~~
+test.schema
+~~~~~~~~~~~
 
 Tests linguistic schema on various data.
 
 :license: MIT and BSD
 """
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
 from sanskrit import Context
 from sanskrit.db import setup as S  # ``as S`` avoids problems with nose
 from sanskrit.db.schema import *
 
 from . import TestCase, config as cfg
+
 
 class SchemaTestCase(TestCase):
 
@@ -133,7 +132,7 @@ class FormTestCase(SchemaTestCase):
         session.flush()
 
         noun = Noun(stem=stem, name='narasya', gender_id=Gender.MASCULINE,
-                    case_id = Case.GENITIVE, number_id=Number.SINGULAR)
+                    case_id=Case.GENITIVE, number_id=Number.SINGULAR)
         session.add(noun)
         session.commit()
 
@@ -312,5 +311,3 @@ class FormTestCase(SchemaTestCase):
         self.assertEqual(verb.root.basis.name, 'gam')
         self.assertEqual(mods, [mod])
         self.assertEqual(prefixes, ['upa', 'sam'])
-
-
