@@ -193,8 +193,8 @@ class VClass(SimpleBase):
     C9 = 9
     #: Class 10, corresponding to Panini's **curādi**.
     C10 = 10
-    #: Denominative verbs, corresponding to varios Paninian terms.
-    DENOMINATIVE = 11
+    #: Nominal verbs, corresponding to varios Paninian terms.
+    NOMINAL = 11
     #: Class unknown, for verbs like "ah".
     UNKNOWN = 12
 
