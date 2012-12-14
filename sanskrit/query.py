@@ -19,6 +19,35 @@ class SimpleQuery(object):
         self.ctx = ctx
         self.session = ctx.session_class()
 
+    def pronoun(self, stem_name, gender):
+        """Query for pronouns.
+
+        :param stem_name: the stem name
+        :param gender: the pronoun gender
+        """
+        enum_id = self.ctx.enum_id
+        enum_abbr = self.ctx.enum_abbr
+        session = self.session
+
+        stem = session.query(PronounStem)\
+                      .filter(PronounStem.name == stem_name)\
+                      .first()
+
+        stem_id = stem.id
+        gender_id = enum_id['gender'][gender]
+
+        returned = {}
+        results = session.query(Pronoun)\
+                         .filter(Pronoun.stem_id == stem_id)\
+                         .filter(Pronoun.gender_id == gender_id)
+        for pronoun in results:
+            case = enum_abbr['case'][pronoun.case_id]
+            number = enum_abbr['number'][pronoun.number_id]
+            returned[(case, number)] = pronoun.name
+
+        session.close()
+        return returned
+
     def verb(self, root_name, mode, voice, vclass=None):
         """Query for inflected verbs.
 

@@ -15,6 +15,7 @@ from sanskrit.schema import *
 
 from . import TestCase, config as cfg
 
+ctx = Context(cfg)
 db_built = False
 
 
@@ -22,7 +23,6 @@ class QueryTestCase(TestCase):
 
     def setUp(self):
         """Initialize the database if it doesn't exist."""
-        ctx = self.ctx = Context(cfg)
         global db_built
 
         if not db_built:
@@ -30,6 +30,25 @@ class QueryTestCase(TestCase):
             ctx.create_all()
             S.run(ctx)
             db_built = True
+
+    def verify(self, actual, expected):
+        for k in expected:
+            self.assertIn(k, actual)
+            self.assertEqual(actual[k], expected[k])
+
+    def test_pronoun(self):
+        expected = {
+            ('1', 'd'): 'tO',
+            ('4', 's'): 'tasmE',
+            ('6', 'p'): 'tezAm'
+        }
+
+        Q = SimpleQuery(ctx)
+        name_actual = Q.pronoun('tad', 'masculine')
+        abbr_actual = Q.pronoun('tad', 'm')
+        self.verify(name_actual, expected)
+        self.verify(abbr_actual, expected)
+        self.assertEqual(len(name_actual), 21)
 
     def test_verb(self):
         expected = {
@@ -44,8 +63,8 @@ class QueryTestCase(TestCase):
             ('1', 'p'): 'gacCAmas',
         }
 
-        Q = SimpleQuery(self.ctx)
+        Q = SimpleQuery(ctx)
         name_actual = Q.verb('gam', 'present', 'parasmaipada')
         abbr_actual = Q.verb('gam', 'pres', 'P')
-        self.assertEqual(name_actual, expected)
-        self.assertEqual(abbr_actual, expected)
+        self.verify(name_actual, expected)
+        self.verify(abbr_actual, expected)
