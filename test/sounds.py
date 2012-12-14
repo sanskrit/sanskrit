@@ -11,6 +11,7 @@ Tests various functions for Sanskrit sounds.
 from sanskrit.language import sounds
 from . import TestCase
 
+
 class CleanTestCase(TestCase):
     def test(self):
         func = sounds.clean
@@ -60,6 +61,22 @@ class TransformTestCase(TestCase):
         self.assertEqual('k', func('G'))
         self.assertEqual('w', func('j'))
         self.assertEqual('a', func('a'))
+
+    def test_guna(self):
+        func = sounds.guna
+        data = zip('a A i I u U  f  F  x  X e E o O'.split(),
+                   'a A e e o o ar ar al al e E o O'.split())
+
+        for data, output in data:
+            self.assertEqual(output, func(data))
+
+    def test_vrddhi(self):
+        func = sounds.vrddhi
+        data = zip('a A i I u U  f  F  x  X e E o O'.split(),
+                   'A A E E O O Ar Ar Al Al E E O O'.split())
+
+        for data, output in data:
+            self.assertEqual(output, func(data))
 
 
 class NumSyllablesTestCase(TestCase):

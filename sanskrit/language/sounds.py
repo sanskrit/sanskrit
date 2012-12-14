@@ -29,6 +29,7 @@ RETROFLEXES = set('wWqQRz')
 VOICED_SOUNDS = set('aAiIuUfFxXeEoOgGNjJYqQRdDnbBmyrlvh')
 VALID_FINALS = set('aAiIuUfeEoOkwtpNnmsr')
 
+
 # General functions
 # -----------------
 
@@ -43,32 +44,45 @@ def clean(phrase, valid=None):
     valid = valid or ALL
     return ''.join([L for L in phrase if L in valid])
 
+
 def key_fn(s):
     """Sorting function for Sanskrit words in SLP1."""
-    returned = []
     sa = "aAiIuUfFxXeEoOMHkKgGNcCjJYwWqQRtTdDnpPbBmyrlvSzsh '~"
     en = "123ABCDEFGHIJKLMNOPQRSTUVWabcdefghijklmnopqrstuvwxyz"
     mapper = dict(zip(sa, en))
     mapped = map(mapper.__getitem__, [x for x in s if x in ALL])
     return ''.join(mapped)
 
+
 # Letter transformations
 # ----------------------
 
-data = {
-    'aspirate': dict(zip('kgcjwqtdpb', 'KGCJWQTDPB')),
-    'deaspirate': dict(zip('KGCJWQTDPB', 'kgcjwqtdpb')),
-    'voice': dict(zip('kKcCwWtTpP', 'gGjJqQdDbB')),
-    'devoice': dict(zip('gGjJqQdDbB', 'kKcCwWtTpP')),
-    'nasalize': dict(zip('kKgGhcCjJwWqQtTdDpPbB', 'NNNNNYYYYRRRRnnnnmmmm')),
-    'dentalize': dict(zip('wWqQRz', 'tTdDns')),
-    'simplify': dict(zip('kgGNhjtTdDpPbBnmsrH', 'kkkkkwttttppppnmH'))
-}
-
 def letter_transform(name, docstring=None):
-    transform_map = data[name]
-    def func(letter):
-        return transform_map.get(letter, letter)
+    data = {
+        'aspirate': dict(zip('kgcjwqtdpb',
+                             'KGCJWQTDPB')),
+        'deaspirate': dict(zip('KGCJWQTDPB',
+                               'kgcjwqtdpb')),
+        'voice': dict(zip('kKcCwWtTpP',
+                          'gGjJqQdDbB')),
+        'devoice': dict(zip('gGjJqQdDbB',
+                            'kKcCwWtTpP')),
+        'nasalize': dict(zip('kKgGhcCjJwWqQtTdDpPbB',
+                             'NNNNNYYYYRRRRnnnnmmmm')),
+        'dentalize': dict(zip('wWqQRz',
+                              'tTdDns')),
+        'simplify': dict(zip('kgGNhjtTdDpPbBnmsrH',
+                             'kkkkkwttttppppnmHHH')),
+        'guna': dict(zip('i I u U  f  F  x  X'.split(),
+                         'e e o o ar ar al al'.split())),
+        'vrddhi': dict(zip('a i I u U  f  F  x  X e o'.split(),
+                           'A E E O O Ar Ar Al Al E O'.split()))
+    }
+
+    get = data[name].get
+
+    def func(L):
+        return get(L, L)
 
     if docstring is None:
         docstring = """{0} `letter`. If this is not possible, return `letter`
@@ -100,8 +114,18 @@ simplify = letter_transform('simplify',
     :param letter: the letter to simplify
     """
 )
+guna = letter_transform('guna',
+    docstring="""
+    Apply guna to the given letter, if possible.
+    """
+)
+vrddhi = letter_transform('vrddhi',
+    docstring="""
+    Apply vrddhi to the given letter, if possible.
+    """
+)
 
-del data, letter_transform
+del letter_transform
 
 
 # Meter and metrical properties
@@ -112,7 +136,8 @@ def num_syllables(phrase):
 
     :param phrase: the phrase to test
     """
-    return sum(1 for L in phrase if L in VOWELS )
+    return sum(1 for L in phrase if L in VOWELS)
+
 
 def meter(phrase, heavy='_', light='.'):
     """Find the meter of the given phrase. Results are returned as a list
