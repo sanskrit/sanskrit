@@ -5,7 +5,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .schema import Base
+from .schema import Base, EnumBase
 
 
 class Context(object):
@@ -28,12 +28,12 @@ class Context(object):
 
         context.config['FOO'] = 'baz'
 
-    :param config: an object to read from. If this is a string, treat `config`
-                as a module path and load values from that module. Otherwise,
-                treat `config` as some sort of dictionary.
+    :param config: an object to read from. If this is a string, treat
+                   `config` as a module path and load values from that
+                   module. Otherwise, treat `config` as a dictionary.
     """
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, connect=True):
         #: A :class:`dict` of various settings. By convention, all keys are
         #: uppercase. These are used to create :attr:`engine` and
         #: :attr:`session_class`.
@@ -87,7 +87,7 @@ class Context(object):
         default('VERB_PREFIX_DATA', 'misc', 'verb-prefixes.yml')
         default('SANDHI_DATA', 'misc', 'sandhi.yml')
 
-        if 'DATABASE_URI' in self.config:
+        if connect and 'DATABASE_URI' in self.config:
             self.connect()
 
     def connect(self):
@@ -104,3 +104,34 @@ class Context(object):
     def drop_all(self):
         """Drop all tables defined in `sanskrit.schema`."""
         Base.metadata.drop_all(self.engine)
+
+    def _build_enums(self):
+        """Fetch and store enumerated data."""
+        self._enum_id = {}
+        self._enum_abbr = {}
+        session = self.session_class()
+        for cls in EnumBase.__subclasses__():
+            key = cls.__tablename__
+            self._enum_id[key] = enum_id = {}
+            self._enum_abbr[key] = enum_abbr = {}
+            for item in session.query(cls).all():
+                enum_id[item.name] = enum_id[item.abbr] = item.id
+                enum_abbr[item.id] = enum_abbr[item.name] = item.abbr
+
+    @property
+    def enum_id(self):
+        """Maps a name or abbreviation to an ID."""
+        try:
+            return self._enum_id
+        except AttributeError:
+            self._build_enums()
+            return self._enum_id
+
+    @property
+    def enum_abbr(self):
+        """Maps an ID or name to an abbreviation."""
+        try:
+            return self._enum_abbr
+        except AttributeError:
+            self._build_enums()
+            return self._enum_abbr
