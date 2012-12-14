@@ -9,8 +9,8 @@ Tests linguistic schema on various data.
 """
 
 from sanskrit import Context
-from sanskrit.db import setup as S  # ``as S`` avoids problems with nose
-from sanskrit.db.schema import *
+from sanskrit import setup as S  # ``as S`` avoids problems with nose
+from sanskrit.schema import *
 
 from . import TestCase, config as cfg
 
@@ -24,9 +24,10 @@ class SchemaTestCase(TestCase):
     def setUp(self):
         """Create a new database."""
         self.ctx = Context(cfg)
+        self.ctx.create_all()
         self.session = self.ctx.session_class()
-        S.create_tables(self.ctx)
         S.add_enums(self.session, self.ctx)
+        self.enum = S.ENUM
 
     def add_root(self, name):
         """Add a root with the given name.
@@ -63,17 +64,19 @@ class EnumTestCase(SchemaTestCase):
         def q(obj):
             return self.session.query(obj).all()
 
-        third = next(x for x in q(Person) if x.id == Person.THIRD)
-        dual = next(x for x in q(Number) if x.id == Number.DUAL)
-        parasmaipada = next(x for x in q(Voice) if x.id == Voice.PARASMAIPADA)
-        masculine = next(x for x in q(Gender) if x.id == Gender.MASCULINE)
-        dative = next(x for x in q(Case) if x.id == Case.DATIVE)
+        print [x.__dict__ for x in q(Voice)]
+        enum = self.enum
+        third = next(x for x in q(Person) if x.id == enum['person']['3'])
+        dual = next(x for x in q(Number) if x.id == enum['number']['d'])
+        parasmaipada = next(x for x in q(Voice) if x.id == enum['voice']['P'])
+        masculine = next(x for x in q(Gender) if x.id == enum['gender']['m'])
+        dative = next(x for x in q(Case) if x.id == enum['case']['4'])
 
-        self.assertEqual(third.name, 'third')
-        self.assertEqual(dual.name, 'dual')
-        self.assertEqual(parasmaipada.name, 'parasmaipada')
-        self.assertEqual(masculine.name, 'masculine')
-        self.assertEqual(dative.name, 'dative')
+        self.assertEqual(third.abbr, '3')
+        self.assertEqual(dual.abbr, 'd')
+        self.assertEqual(parasmaipada.abbr, 'P')
+        self.assertEqual(masculine.abbr, 'm')
+        self.assertEqual(dative.abbr, '4')
 
 
 class FormTestCase(SchemaTestCase):
@@ -83,18 +86,20 @@ class FormTestCase(SchemaTestCase):
     def test_verb(self):
         """Test verbs."""
         session = self.session
-        p, n, m, v = (Person.THIRD, Number.SINGULAR, Mode.PRESENT,
-                      Voice.PARASMAIPADA)
+        enum = self.enum
+
+        p, n, m, v = (enum['person']['3'], enum['number']['s'],
+                      enum['mode']['pres'], enum['voice']['P'])
 
         root = self.add_root('kf')
-        p1 = Paradigm(root_id=root.id, vclass_id=VClass.C5,
-                      voice_id=Voice.UBHAYAPADA)
-        p2 = Paradigm(root_id=root.id, vclass_id=VClass.C8,
-                      voice_id=Voice.UBHAYAPADA)
+        p1 = Paradigm(root_id=root.id, vclass_id=enum['vclass']['5'],
+                      voice_id=enum['voice']['U'])
+        p2 = Paradigm(root_id=root.id, vclass_id=enum['vclass']['8'],
+                      voice_id=enum['voice']['U'])
         session.add_all([p1, p2])
         session.flush()
 
-        verb = Verb(root=root, name='karoti', vclass_id=VClass.C5,
+        verb = Verb(root=root, name='karoti', vclass_id=enum['vclass']['5'],
                     person_id=p, number_id=n, mode_id=m, voice_id=v)
         session.add(verb)
         session.commit()
@@ -109,7 +114,7 @@ class FormTestCase(SchemaTestCase):
         root = session.query(Root).first()
         vclasses = [x.id for x in root.vclasses]
         self.assertEqual(root.name, 'kf')
-        self.assertEqual(vclasses, [VClass.C5, VClass.C8])
+        self.assertEqual(vclasses, [enum['vclass']['5'], enum['vclass']['8']])
 
         # Verb
         verb = session.query(Verb).first()
@@ -126,13 +131,14 @@ class FormTestCase(SchemaTestCase):
     def test_noun(self):
         """Test nouns."""
         session = self.session
+        enum = self.enum
 
         stem = NounStem(name='nara')
         session.add(stem)
         session.flush()
 
-        noun = Noun(stem=stem, name='narasya', gender_id=Gender.MASCULINE,
-                    case_id=Case.GENITIVE, number_id=Number.SINGULAR)
+        noun = Noun(stem=stem, name='narasya', gender_id=enum['gender']['m'],
+                    case_id=enum['case']['6'], number_id=enum['number']['s'])
         session.add(noun)
         session.commit()
 
@@ -149,9 +155,9 @@ class FormTestCase(SchemaTestCase):
         noun = session.query(Noun).first()
         self.assertEqual(noun.pos_id, Tag.NOUN)
         self.assertEqual(noun.name, 'narasya')
-        self.assertEqual(noun.gender_id, Gender.MASCULINE)
-        self.assertEqual(noun.case_id, Case.GENITIVE)
-        self.assertEqual(noun.number_id, Number.SINGULAR)
+        self.assertEqual(noun.gender_id, enum['gender']['m'])
+        self.assertEqual(noun.case_id, enum['case']['6'])
+        self.assertEqual(noun.number_id, enum['number']['s'])
 
         # Stem-noun associtaions
         self.assertEqual(stem.id, noun.stem_id)
@@ -189,12 +195,14 @@ class FormTestCase(SchemaTestCase):
     def test_participle(self):
         """Test participles."""
         session = self.session
-        g, c, n = (Gender.MASCULINE, Case.ACCUSATIVE, Number.SINGULAR)
+        enum = self.enum
+
+        g, c, n = (enum['gender']['m'], enum['case']['2'], enum['number']['s'])
 
         root = self.add_root('car')
         part_stem = ParticipleStem(name='carat', root_id=root.id,
-                                   mode_id=Mode.PRESENT,
-                                   voice_id=Voice.PARASMAIPADA)
+                                   mode_id=enum['mode']['pres'],
+                                   voice_id=enum['voice']['P'])
         session.add(part_stem)
         session.flush()
 
@@ -216,8 +224,10 @@ class FormTestCase(SchemaTestCase):
     def test_prefixed_verb(self):
         """Test prefixed verbs."""
         session = self.session
-        p, n, m, v = (Person.THIRD, Number.SINGULAR, Mode.PRESENT,
-                      Voice.PARASMAIPADA)
+        enum = self.enum
+
+        p, n, m, v = (enum['person']['3'], enum['number']['s'],
+                      enum['mode']['pres'], enum['voice']['P'])
 
         root = self.add_root('gam')
         p1 = VerbPrefix(name='upa')
@@ -250,9 +260,11 @@ class FormTestCase(SchemaTestCase):
     def test_modified_verb(self):
         """Test modified verbs."""
         session = self.session
-        mod = Modification.CAUSATIVE
-        p, n, m, v = (Person.THIRD, Number.SINGULAR, Mode.IMPERATIVE,
-                      Voice.PARASMAIPADA)
+        enum = self.enum
+
+        mod = enum['modification']['caus']
+        p, n, m, v = (enum['person']['3'], enum['number']['s'],
+                     enum['mode']['impv'], enum['voice']['P'])
 
         root = self.add_root('gam')
         mroot = ModifiedRoot(name='gamaya', basis_id=root.id)
@@ -279,9 +291,11 @@ class FormTestCase(SchemaTestCase):
     def test_prefixed_modified_verb(self):
         """Test modified verbs with prefixes."""
         session = self.session
-        mod = Modification.CAUSATIVE
-        p, n, m, v = (Person.THIRD, Number.SINGULAR, Mode.OPTATIVE,
-                      Voice.PARASMAIPADA)
+        enum = self.enum
+
+        mod = enum['modification']['caus']
+        p, n, m, v = (enum['person']['3'], enum['number']['s'],
+                      enum['mode']['opt'], enum['voice']['P'])
 
         root = self.add_root('gam')
         p1 = VerbPrefix(name='upa')

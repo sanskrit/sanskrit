@@ -1,21 +1,186 @@
 # -*- coding: utf-8 -*-
 """
-sanskrit.schema.forms
-~~~~~~~~~~~~~~~~~~~~~
+sanskrit.schema
+~~~~~~~~~~~~~~~
 
-Schema for Sanskrit forms.
+Schema for Sanskrit data.
 """
+
+import re
 
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
-from .base import Base, SimpleBase
+
+
+# Setup
+# ==========
+
+# Base classes
+# ------------
+# Set up some sensible defaults
+
+Base = declarative_base()
+
+
+class SimpleBase(Base):
+
+    """A simple default base class. This automatically creates a table name,
+    a primary key, and a `name` field for some payload.
+    """
+
+    __abstract__ = True
+
+    @declared_attr
+    def __tablename__(cls):
+        return re.sub('(?<!^)(?=[A-Z])', '_', cls.__name__).lower()
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+    def __repr__(self):
+        cls = self.__class__.__name__
+        return "%s%r" % (cls, (self.id, self.name))
+
+
+class EnumBase(SimpleBase):
+
+    """Base class for enumerations.
+
+    Each enumeration has a name and an abbreviation.
+    """
+
+    __abstract__ = True
+    abbr = Column(String)
+
+    def __repr__(self):
+        cls = self.__class__.__name__
+        return "%s%r" % (cls, (self.id, self.name, self.abbr))
 
 
 # Enumerations
 # ------------
 # Instead of enums, we use the following:
+
+class Person(EnumBase):
+
+    """Grammatical person:
+
+    - first person, corresponding to Panini's **uttamapuruṣa**
+    - second person, corresponding to Panini's **madhyamapuruṣa**
+    - third person, corresponding to Panini's **prathamapuruṣa**
+    """
+
+
+class Number(EnumBase):
+
+    """Grammatical number:
+
+    - singular, corresponding to Panini's **ekavacana**
+    - dual, corresponding to Panini's **dvivacana**
+    - plural, corresponding to Panini's **bahuvacana**
+    """
+
+
+class Mode(EnumBase):
+
+    """Tenses and moods:
+
+    - present, corresponding to Panini's **laṭ**
+    - aorist, corresponding to Panini's **luṅ**
+    - imperfect, corresponding to Panini's **laṅ**
+    - perfect, corresponding to Panini's **liṭ**
+    - simple future, corresponding to Panini's **lṛṭ**
+    - distant future, corresponding to Panini's **luṭ**
+    - conditional, corresponding to Panini's **lṛṅ**
+    - optative, corresponding to Panini's **vidhi-liṅ**
+    - imperative, corresponding to Panini's **loṭ**
+    - benedictive, corresponding to Panini's **āśīr-liṅ**
+    - injunctive
+    - future optative
+    - future imperative
+    """
+
+
+class Voice(EnumBase):
+
+    """Grammatical voice:
+
+    - parasmaipada
+    - ātmanepada
+    - ubhayapada
+    """
+
+
+class Gender(EnumBase):
+
+    """Grammatical gender. This class is overloaded to handle both
+    regular gender, which is used for inflected nominals:
+
+    - masculine, corresponding to Panini's **puṃliṅga**
+    - feminine, corresponding to Panini's **strīliṅga**
+    - neuter, corresponding to Panini's **napuṃsakaliṅga**
+    - unknown/undefined
+
+    and composite gender, which is used for stems:
+
+    - masculine and feminine
+    - masculine and neuter
+    - feminine and neuter
+    - masculine, feminine, and neuter
+    """
+
+
+class Case(EnumBase):
+
+    """Grammatical case.
+
+    - Nominative case, corresponding to Panini's **prathamā**
+    - Accusative case, corresponding to Panini's **dvitīyā**
+    - Instrumental case, corresponding to Panini's **tṛtīyā**
+    - Dative case, corresponding to Panini's **caturthī**
+    - Ablative case, corresponding to Panini's **pañcamī**
+    - Genitive case, corresponding to Panini's **ṣaṣṭhī**
+    - Locative case, corresponding to Panini's **saptamī**
+    - Vocative case, corresponding to Panini's **saṃbodhana**
+    """
+
+
+class VClass(EnumBase):
+
+    """Verb class:
+
+    - class 1, corresponding to Panini's **bhvādi**
+    - class 2, corresponding to Panini's **adādi**
+    - class 3, corresponding to Panini's **juhotyādi**
+    - class 4, corresponding to Panini's **divādi**
+    - class 5, corresponding to Panini's **svādi**
+    - class 6, corresponding to Panini's **tudādi**
+    - class 7, corresponding to Panini's **rudhādi**
+    - class 8, corresponding to Panini's **tanādi**
+    - class 9, corresponding to Panini's **kryādi**
+    - class 10, corresponding to Panini's **curādi**
+    - class unknown, for verbs like "ah"
+    - nominal, corresponding to various Paninian terms
+    """
+
+    __tablename__ = 'vclass'
+
+
+class Modification(EnumBase):
+
+    """Verb modification:
+
+    - Causative, corresponding to Panini's **ṇic**
+    - Desiderative, corresponding to Panini's **san**
+    - Intensive, corresponding to Panini's **yaṅ**
+    """
+
+
+# Roots, stems, and forms
+# =======================
 
 class Tag(SimpleBase):
 
@@ -46,169 +211,6 @@ class Tag(SimpleBase):
     PERFECT_INDECLINABLE = 10
     NOUN_PREFIX = 11
     VERB_PREFIX = 12
-
-
-class Person(SimpleBase):
-
-    """Grammatical person."""
-
-    #: First person, corresponding to Panini's **uttamapuruṣa**.
-    FIRST = 1
-    #: Second person, corresponding to Panini's **madhyamapuruṣa**.
-    SECOND = 2
-    #: Third person, corresponding to Panini's **prathamapuruṣa**.
-    THIRD = 3
-
-
-class Number(SimpleBase):
-
-    """Grammatical number."""
-
-    #: Singular number, corresponding to Panini's **ekavacana**.
-    SINGULAR = 1
-    #: Dual number, corresponding to Panini's **dvivacana**.
-    DUAL = 2
-    #: Plural number, corresponding to Panini's **bahuvacana**.
-    PLURAL = 3
-
-
-class Mode(SimpleBase):
-
-    """Verb mode. In addition to representing the basic tenses and moods
-    described in the Ashtadhyayi, :class:`Mode` also contains composite
-    modes like "future optative" and "future imperative."
-    """
-
-    #: Present, corresponding to Panini's **laṭ**.
-    PRESENT = 1
-    #: Aorist, corresponding to Panini's **luṅ**.
-    AORIST = 2
-    #: Imperfect, corresponding to Panini's **laṅ**.
-    IMPERFECT = 3
-    #: Perfect, corresponding to Panini's **liṭ**.
-    PERFECT = 4
-    #: Simple future, corresponding to Panini's **lṛṭ**.
-    SIMPLE_FUTURE = 5
-    #: Distant future, corresponding to Panini's **luṭ**.
-    DISTANT_FUTURE = 6
-    #: Conditional, corresponding to Panini's **lṛṅ**.
-    CONDITIONAL = 7
-    #: Optative, corresponding to Panini's **liṅ**.
-    OPTATIVE = 8
-    #: Imperative, corresponding to Panini's **loṭ**.
-    IMPERATIVE = 9
-    #: Benedictive
-    BENEDICTIVE = 10
-    #: Injunctive
-    INJUNCTIVE = 11
-    #: Future optative
-    FUTURE_OPTATIVE = 12
-    #: Future imperative
-    FUTURE_IMPERATIVE = 13
-
-
-class Voice(SimpleBase):
-
-    """Grammatical voice."""
-
-    #: Parasmaipada
-    PARASMAIPADA = 1
-    #: Atmanepada
-    ATMANEPADA = 2
-    #: A combination of parasmaipada and atmanepada.
-    UBHAYAPADA = 3
-
-
-class Gender(SimpleBase):
-
-    """Grammatical gender. This class is overloaded to handle two kinds of
-    gender:
-
-    - :class:`Nominal` gender, which is masculine, feminine, neuter, or other
-    - :class:`Stem` gender, which can also be any combination of masculine,
-      feminine, and neuter
-    """
-
-    #: Masculine gender, corresponding to Panini's **puṃliṅga**.
-    MASCULINE = 1
-    #: Feminine gender, corresponding to Panini's **strīliṅga**.
-    FEMININE = 2
-    #: Neuter gender, corresponding to Panini's **napuṃsakaliṅga**.
-    NEUTER = 3
-    #: Masculine or feminine gender
-    MF = 4
-    #: Feminine or neuter gender
-    FN = 5
-    #: Masculine or neuter gender
-    MN = 6
-    #: Any gender
-    MFN = 7
-    #: Unknown or undefined gender
-    UNDEFINED = 8
-
-
-class Case(SimpleBase):
-
-    """Grammatical case."""
-
-    #: Nominative case, corresponding to Panini's **prathamā**.
-    NOMINATIVE = 1
-    #: Accusative case, corresponding to Panini's **dvitīyā**.
-    ACCUSATIVE = 2
-    #: Instrumental case, corresponding to Panini's **tṛtīyā**.
-    INSTRUMENTAL = 3
-    #: Dative case, corresponding to Panini's **caturthī**.
-    DATIVE = 4
-    #: Ablative case, corresponding to Panini's **pañcamī**.
-    ABLATIVE = 5
-    #: Genitive case, corresponding to Panini's **ṣaṣṭhī**.
-    GENITIVE = 6
-    #: Locative case, corresponding to Panini's **saptamī**.
-    LOCATIVE = 7
-    #: Vocative case, corresponding to Panini's **saṃbodhana**.
-    VOCATIVE = 8
-
-
-class VClass(SimpleBase):
-
-    """Verb class."""
-
-    #: Class 1, corresponding to Panini's **bhvādi**.
-    C1 = 1
-    #: Class 2, corresponding to Panini's **adādi**.
-    C2 = 2
-    #: Class 3, corresponding to Panini's **juhotyādi**.
-    C3 = 3
-    #: Class 4, corresponding to Panini's **divādi**.
-    C4 = 4
-    #: Class 5, corresponding to Panini's **svādi**.
-    C5 = 5
-    #: Class 6, corresponding to Panini's **tudādi**.
-    C6 = 6
-    #: Class 7, corresponding to Panini's **rudhādi**.
-    C7 = 7
-    #: Class 8, corresponding to Panini's **tanādi**.
-    C8 = 8
-    #: Class 9, corresponding to Panini's **kryādi**.
-    C9 = 9
-    #: Class 10, corresponding to Panini's **curādi**.
-    C10 = 10
-    #: Nominal verbs, corresponding to varios Paninian terms.
-    NOMINAL = 11
-    #: Class unknown, for verbs like "ah".
-    UNKNOWN = 12
-
-
-class Modification(SimpleBase):
-
-    """Verb modification."""
-
-    #: Causative, corresponding to Panini's **ṇic**.
-    CAUSATIVE = 1
-    #: Desiderative, corresponding to Panini's **san**.
-    DESIDERATIVE = 2
-    #: Intensive, corresponding to Panini's **yaṅ**.
-    INTENSIVE = 3
 
 
 # Unfinished forms
@@ -584,3 +586,30 @@ class RootModAssociation(Base):
 
     def __init__(self, modification):
         self.modification = modification
+
+
+# Sandhi rules
+# ============
+
+class SandhiType(EnumBase):
+
+    """Rule type. Sandhi rules are usually of three types:
+
+    - *external* rules, which act between words
+    - *internal* rules, which act between morphemes
+    - *general* rules, which act in any context
+    """
+
+
+class SandhiRule(Base):
+
+    __tablename__ = 'sandhi'
+    id = Column(Integer, primary_key=True)
+    first = Column(String)
+    second = Column(String)
+    result = Column(String)
+    rule_type = Column(ForeignKey(SandhiType.id))
+
+    def __repr__(self):
+        values = (self.id, self.first, self.second, self.result)
+        return 'SandhiRule(%r, %r, %r, %r)' % values

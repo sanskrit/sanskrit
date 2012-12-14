@@ -8,14 +8,12 @@ Tests joining and splitting words with sandhi rules.
 :license: MIT and BSD
 """
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
 from sanskrit import Context
-from sanskrit.db import setup as S  # ``as S`` avoids problems with nose
-from sanskrit.schema import SandhiRule
+from sanskrit import setup as S  # ``as S`` avoids problems with nose
 from sanskrit.language import sandhi
 
 from . import TestCase, config as cfg
+
 
 class SandhiTestCase(TestCase):
 
@@ -40,7 +38,8 @@ class SandhiTestCase(TestCase):
 
         ctx = Context(cfg)
         session = ctx.session_class()
-        S.create_tables(ctx)
+        ctx.create_all()
+        S.add_enums(session, ctx)
         S.add_sandhi(session, ctx)
 
         self.sandhi = sandhi.Sandhi()
