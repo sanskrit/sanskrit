@@ -132,7 +132,7 @@ def beta2unicodeTrie():
     t["S"] = "\u03C3"
 
     t["T"] = "\u03C4"
-    t[""] = "\u03C5"
+    t["U"] = "\u03C5"
     t["F"] = "\u03C6"
     t["X"] = "\u03C7"
     t["Y"] = "\u03C8"
