@@ -121,7 +121,7 @@ class SanscriptTestCase(TestCase):
     def compare_all(self, _from, _to):
         """Compare all data for `_from` and `_to`"""
         for group in DATA[_from]:
-            if group in DATA[_to]:
+            if _to in DATA and group in DATA[_to]:
                 self.compare(_from, _to, group)
 
     def compare(self, _from, _to, group):
@@ -149,8 +149,9 @@ class GeneralTestCase(SanscriptTestCase):
         scheme corresponds to a subset of Devanagari."""
         dev = S.SCHEMES[S.DEVANAGARI]
         groups = set(dev.keys())
-        for scheme in S.SCHEMES.values():
+        for name, scheme in S.SCHEMES.items():
             for group in scheme:
+                print name, group
                 self.assertIn(group, groups)
                 self.assertEqual(len(scheme[group]), len(dev[group]))
 
