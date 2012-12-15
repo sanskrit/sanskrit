@@ -247,6 +247,22 @@ class NounPrefix(Prefix):
     __mapper_args__ = {'polymorphic_identity': Tag.NOUN_PREFIX}
 
 
+class NominalEnding(SimpleBase):
+
+    """A suffix for regular nouns and adjectives This corresponds to
+    Panini's **sup**."""
+
+    stem_type = Column(String)
+    gender_id = Column(ForeignKey(Gender.id))
+    case_id = Column(ForeignKey(Case.id))
+    number_id = Column(ForeignKey(Number.id))
+    compounded = Column(Boolean)
+
+    gender = relationship(Gender)
+    case = relationship(Case)
+    number = relationship(Number)
+
+
 class Root(SimpleBase):
 
     """A verb root. This corresponds to Panini's **dhātu**:

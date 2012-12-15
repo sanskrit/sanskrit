@@ -40,7 +40,7 @@ class QueryTestCase(TestCase):
         expected = {
             ('1', 'd'): 'tO',
             ('4', 's'): 'tasmE',
-            ('6', 'p'): 'tezAm'
+            ('6', 'p'): 'tezAm',
         }
 
         Q = SimpleQuery(ctx)
@@ -49,6 +49,20 @@ class QueryTestCase(TestCase):
         self.verify(name_actual, expected)
         self.verify(abbr_actual, expected)
         self.assertEqual(len(name_actual), 21)
+
+    def test_noun(self):
+        expected = {
+            ('1', 'd'): 'gajO',
+            ('4', 's'): 'gajAya',
+            ('6', 'p'): 'gajAnAm',
+        }
+
+        Q = SimpleQuery(ctx)
+        name_actual = Q.noun('gaja', 'masculine')
+        abbr_actual = Q.noun('gaja', 'm')
+        self.verify(name_actual, expected)
+        self.verify(abbr_actual, expected)
+        self.assertEqual(len(name_actual), 24)
 
     def test_verb(self):
         expected = {

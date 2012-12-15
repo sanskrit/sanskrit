@@ -265,6 +265,106 @@ def add_verbal(session, ctx):
     _add_prefixed_roots(session, ctx, root_map=roots, prefix_map=prefixes)
 
 
+# Nominal data
+# ------------
+def _add_nominal_endings(session, ctx):
+    with open(ctx.config['NOMINAL_ENDING_DATA']) as f:
+        gender = ENUM['gender']
+        case = ENUM['case']
+        number = ENUM['number']
+
+        for group in yaml.load_all(f):
+            stem_type = group['stem']
+            for row in group['endings']:
+                kw = {
+                    'name': row['name'],
+                    'stem_type': stem_type,
+                    'gender_id': gender[row['gender']],
+                    'case_id': case.get(row.get('case')),
+                    'number_id': number.get(row.get('number')),
+                    'compounded': row.get('compounded', False)
+                    }
+                ending = NominalEnding(**kw)
+                session.add(ending)
+                session.flush()
+            util.tick(stem_type)
+
+    session.commit()
+
+
+def _add_irregular_nouns(session, ctx):
+    """Add irregular nouns to the database."""
+
+    gender = ENUM['gender']
+    case = ENUM['case']
+    number = ENUM['number']
+
+    with open(ctx.config['IRREGULAR_NOUN_DATA']) as f:
+        for noun in yaml.load_all(f):
+            gender_id = gender[noun['genders']]
+            stem = NounStem(name=noun['stem'], gender_id=gender_id)
+            session.add(stem)
+            session.flush()
+            util.tick(stem.name)
+
+            for form in noun['forms']:
+                name = form['name']
+                gender_id = gender[form['gender']]
+                case_id = case[form['case']]
+                number_id = number[form['number']]
+
+                result = Noun(stem=stem, name=name, gender_id=gender_id,
+                              case_id=case_id, number_id=number_id)
+                session.add(result)
+                session.flush()
+
+    session.commit()
+
+
+def _add_regular_nouns(session, ctx):
+    """Add regular nouns to the database."""
+
+    conn = ctx.engine.connect()
+    ins = NounStem.__table__.insert()
+    gender = ENUM['gender']
+    pos_id = Tag.NOUN
+
+    buf = []
+    i = 0
+    with open(ctx.config['NOUN_DATA']) as f:
+        for noun in yaml.load_all(f):
+            name = noun['name']
+            gender_id = gender[noun['genders']]
+            buf.append({
+                'name': name,
+                'pos_id': pos_id,
+                'gender_id': gender_id,
+                })
+
+            i += 1
+            if i % 500 == 0:
+                util.tick(name)
+                conn.execute(ins, buf)
+                buf = []
+
+    if buf:
+        conn.execute(ins, buf)
+
+
+def add_nominals(session, ctx):
+    util.heading('Nominal endings')
+    _add_nominal_endings(session, ctx)
+
+    util.heading('Irregular nouns')
+    _add_irregular_nouns(session, ctx)
+
+    util.heading('Regular nouns')
+    _add_regular_nouns(session, ctx)
+
+
+# Pronominal forms
+# ----------------
+
 def add_pronouns(session, ctx):
     """Add pronouns to the database."""
 
@@ -303,10 +403,11 @@ def run(ctx):
     functions = [
         ('Tags', add_tags),
         ('Enumerated data', add_enums),
+        ('Nominal data', add_nominals),
         ('Sandhi rules', add_sandhi),
         ('Indeclinables', add_indeclinables),
         ('Verbal data', add_verbal),
-        ('Pronouns', add_pronouns),
+        ('Pronoun data', add_pronouns),
         ]
 
     for name, f in functions:

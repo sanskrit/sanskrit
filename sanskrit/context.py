@@ -75,7 +75,7 @@ class Context(object):
         default('NOUN_DATA', 'nominal', 'nouns.yml')
         default('ADJECTIVE_DATA', 'nominal', 'adjectives.yml')
         default('PRONOUN_DATA', 'nominal', 'pronouns.yml')
-        default('IRREGULAR_NOMINAL_DATA', 'nominal', 'irregular.yml')
+        default('IRREGULAR_NOUN_DATA', 'nominal', 'irregular-nouns.yml')
 
         default('ROOT_DATA', 'verbal', 'roots.yml')
         default('PREFIXED_ROOT_DATA', 'verbal', 'prefixed-roots.yml')
@@ -86,6 +86,7 @@ class Context(object):
         default('INDECLINABLE_DATA', 'misc', 'indeclinables.yml')
         default('VERB_PREFIX_DATA', 'misc', 'verb-prefixes.yml')
         default('SANDHI_DATA', 'misc', 'sandhi.yml')
+        default('NOMINAL_ENDING_DATA', 'misc', 'nominal-endings.yml')
 
         if connect and 'DATABASE_URI' in self.config:
             self.connect()
