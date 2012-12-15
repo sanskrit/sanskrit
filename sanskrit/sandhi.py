@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-sanskrit.language.sandhi
-~~~~~~~~~~~~~~~~~~~~~~~~
+sanskrit.sandhi
+~~~~~~~~~~~~~~~
 
 Sandhi operations.
 
@@ -15,12 +15,12 @@ class Exempt(unicode):
 
     """A helper class for marking strings as exempt from sandhi changes. To
     mark a string as exempt, just do the following::
-    
+
         original = 'amI'
         exempt = Exempt('amI')
 
     :class:`Exempt` is a subclass of :class:`unicode`, so you can use normal
-    string methods on :class:`Exempt` objects.    
+    string methods on :class:`Exempt` objects.
     """
 
 
@@ -55,7 +55,7 @@ class Sandhi(object):
     def add_rules(self, *rules):
         """Add rules for splitting and joining words. Rules should be ordered
         collections that contain:
-        
+
         - the first part of the combination
         - the second part of the combination
         - the result
@@ -78,10 +78,10 @@ class Sandhi(object):
         """Join the given chunks according to the object's rules::
 
             assert 'tasyecCA' == s.join('tasya', 'icCA')
-        
+
         :meth:`join` does **not** take pragṛhya rules into account. As a
         reminder, the main exception are:
-        
+
             | 1.1.11 "ī", "ū", and "e" when they end words in the dual.
             | 1.1.12 the same vowels after the "m" of adas;
             | 1.1.13 particles with just one vowel, apart from "ā"
@@ -152,12 +152,12 @@ class Sandhi(object):
                 yield (chunk1, chunk2)
 
             # Rule-based splits: undo a sandhi change
-            rules = splitter[chunk2]                
+            rules = splitter[chunk2]
             for first, second, result, _, _, len_result in rules:
                 before = chunk1 + first
                 after = second + chunk2[len_result:]
                 yield (before, after)
-            
+
         # Non-split: yield the chunk as-is.
         yield (chunk, '')
 

@@ -10,7 +10,7 @@ Tests joining and splitting words with sandhi rules.
 
 from sanskrit import Context
 from sanskrit import setup as S  # ``as S`` avoids problems with nose
-from sanskrit.language import sandhi
+from sanskrit import sandhi
 
 from . import TestCase, config as cfg
 

@@ -8,7 +8,7 @@ Tests various functions for Sanskrit sounds.
 :license: MIT and BSD
 """
 
-from sanskrit.language import sounds
+from sanskrit import sounds
 from . import TestCase
 
 

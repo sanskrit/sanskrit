@@ -1,5 +1,5 @@
-from .. import util
-from ..schema import NominalEnding
+from . import util
+from .schema import NominalEnding
 
 
 class Generator(object):

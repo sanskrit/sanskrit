@@ -9,7 +9,7 @@
 """
 
 from .schema import *
-from .language.generator import Generator
+from .generator import Generator
 
 
 class SimpleQuery(object):
