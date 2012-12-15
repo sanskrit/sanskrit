@@ -44,21 +44,6 @@ class EnumTestCase(SchemaTestCase):
 
     """Tests the "enumerated" classes."""
 
-    def test_enum_sizes(self):
-        """Test enum dimensions."""
-        session = self.session
-        persons = session.query(Person).all()
-        numbers = session.query(Number).all()
-        voices = session.query(Voice).all()
-        genders = session.query(Gender).all()
-        cases = session.query(Case).all()
-
-        self.assertEqual(len(persons), 3)
-        self.assertEqual(len(numbers), 3)
-        self.assertEqual(len(voices), 3)
-        self.assertEqual(len(genders), 8)
-        self.assertEqual(len(cases), 8)
-
     def test_enum_names(self):
         """Test enum values."""
         def q(obj):
