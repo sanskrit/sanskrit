@@ -29,12 +29,12 @@ class SandhiTestCase(TestCase):
             (s('PalAni alaBat'), 'PalAny alaBat'),
             (s('yogin arjuna'), 'yoginn arjuna'),
             (s('narEs agacCat'), 'narEr agacCat'),
-        ]
+            ]
         self.three_split = [
             (s('pARqavAS ca eva'), 'pARqavAS cEva'),
             (['tasmin', 'Pale', 'iti'], 'tasmin Pala iti'),
             (['te', sandhi.Exempt('Pale'), 'iti'], 'te Pale iti'),
-        ]
+            ]
 
         ctx = Context(cfg)
         session = ctx.session_class()
@@ -55,3 +55,25 @@ class SandhiTestCase(TestCase):
         for chunks, joined in self.two_split:
             splits = list(self.sandhi.splits(joined.replace(' ', '')))
             self.assertIn(tuple(chunks), splits)
+
+    def test_internal_retroflex(self):
+        data = [
+            ('narena', 'nareRa'),
+            ('vAksu', 'vAkzu'),
+            ('nisanna', 'nizaRRa'),
+            ('agnInAm', 'agnInAm'),
+            ('havisA', 'havizA'),
+            ('rAmAyana', 'rAmAyaRa'),
+            ]
+        for raw, actual in data:
+            self.assertEqual(self.sandhi.join(raw, internal=True), actual)
+
+    def test_internal_join(self):
+        data = [
+            ('dveS', 'ti', 'dvezwi'),
+            ('dviS', 'Ta', 'dvizWa'),
+            ('draS', 'sya', 'drakzya'),
+            ]
+        for before, after, actual in data:
+            expected = self.sandhi.join(before, after, internal=True)
+            self.assertEqual(expected, actual)

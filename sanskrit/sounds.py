@@ -17,7 +17,8 @@ LONG_VOWELS = VOWELS - SHORT_VOWELS
 STOPS = set('kKgGcCjJwWqQtTdDpPbB')
 NASALS = set('NYRnm')
 SEMIVOWELS = set('yrlLv')
-CONSONANTS = STOPS.union(NASALS).union(SEMIVOWELS).union(set('Szsh'))
+SAVARGA = set('Szsh')
+CONSONANTS = STOPS.union(NASALS).union(SEMIVOWELS).union(SAVARGA)
 
 SOUNDS = VOWELS.union(CONSONANTS).union(set('HM'))
 

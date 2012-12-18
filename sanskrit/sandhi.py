@@ -8,8 +8,10 @@ Sandhi operations.
 :license: MIT and BSD
 """
 
-from sanskrit.schema import SandhiRule
-from sanskrit.util import HashTrie
+from . import sounds
+from .schema import SandhiRule
+from .util import HashTrie
+
 
 class Exempt(unicode):
 
@@ -74,6 +76,45 @@ class Sandhi(object):
                      len(result))
             self.splitter[result] = items
 
+    def _internal_retroflex(self, term):
+        """Apply the "n -> ṇ" and "s -> ṣ" rules of internal sandhi.
+
+        :param term: the term to process
+        """
+        # causes "s" retroflexion
+        s_trigger = set('iIuUfFeEoOkr')
+        # causes "n" retroflexion
+        n_trigger = set('fFrz')
+        # Allowed after n_trigger
+        n_between = sounds.VOWELS.union('kKgGNpPbBmhvyM')
+        # Must appear after the retroflexed "n"
+        n_after = sounds.VOWELS.union('myvn')
+
+        letters = list(term)
+
+        apply_s = False
+        apply_n = False
+        had_n = False  # Used for double retroflexion ('nisanna' -> 'nizaRRa')
+        for i, L in enumerate(letters[:-1]):
+            # "s" retroflexion
+            if apply_s and L == 's':
+                letters[i] = L = 'z'
+            apply_s = L in s_trigger
+
+            # "n" retroflexion
+            if had_n and L == 'n':
+                letters[i] = 'R'
+                had_n = False
+            elif apply_n and L == 'n' and letters[i+1] in n_after:
+                letters[i] = 'R'
+                had_n = True
+            if L in n_trigger:
+                apply_n = True
+            else:
+                apply_n = apply_n and L in n_between
+
+        return ''.join(letters)
+
     def join(self, *chunks, **kw):
         """Join the given chunks according to the object's rules::
 
@@ -94,15 +135,24 @@ class Sandhi(object):
             assert 'te iti' == s.join(Exempt('te'), 'iti')
 
         :param chunks: the chunks to stitch together
-        :key separator: the separator to use between non-joined terms. By
+        :key internal: the separator to use between non-joined terms. By
                         default, this is a single space ``' '``. For internal
                         sandhi, this should be set to ``''``.
         """
-        separator = kw.pop('separator', ' ')
+        internal = kw.pop('internal', False)
+
+        if kw:
+            key = kw.keys()[0]
+            msg = "'join() got an unexpected keyword argument '%s'" % key
+            raise TypeError(msg)
+
+        separator = '' if internal else ' '
 
         it = iter(chunks)
         returned = next(it)
         for chunk in it:
+            if not chunk:
+                continue
             if isinstance(returned, Exempt):
                 returned += separator + chunk
             else:
@@ -116,11 +166,15 @@ class Sandhi(object):
                     key = (returned[-i:], chunk[0])
                     result = self.joiner.get(key, None)
                     if result:
-                        return returned[:-i] + result + chunk[1:]
+                        returned = returned[:-i] + result + chunk[1:]
+                        break
             if isinstance(chunk, Exempt):
                 returned = Exempt(returned)
 
-        return returned
+        if internal:
+            return self._internal_retroflex(returned)
+        else:
+            return returned
 
     def splits(self, chunk):
         """Return a generator for all splits in `chunk`. Results are yielded
