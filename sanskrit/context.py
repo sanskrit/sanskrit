@@ -91,6 +91,11 @@ class Context(object):
         if connect and 'DATABASE_URI' in self.config:
             self.connect()
 
+    def build(self):
+        """Build all data."""
+        from sanskrit import setup
+        setup.run(self)
+
     def connect(self):
         """Connect to the database."""
         self.engine = create_engine(self.config['DATABASE_URI'])
@@ -100,7 +105,12 @@ class Context(object):
 
     def create_all(self):
         """Create tables for every model in `sanskrit.schema`."""
-        Base.metadata.create_all(self.engine)
+        metadata = Base.metadata
+        extant = {t.name for t in metadata.tables.values() if t.exists(self.engine)}
+        metadata.create_all(self.engine)
+        for name in metadata.sorted_tables:
+            if name not in extant:
+                print '  [ c ] {0}'.format(name)
 
     def drop_all(self):
         """Drop all tables defined in `sanskrit.schema`."""
