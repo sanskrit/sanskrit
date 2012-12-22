@@ -126,11 +126,30 @@ class Gender(EnumBase):
 
     and composite gender, which is used for stems:
 
+    """
+
+
+class GenderGroup(EnumBase):
+
+    """Grammatical gender of a nominal stem. Since stems support nearly
+    every combination of genders, this class stores both individual
+    genders:
+
+    - masculine
+    - feminine
+    - neuter
+    - unknown/undefined
+
+    and collections of genders:
+
     - masculine and feminine
     - masculine and neuter
     - feminine and neuter
     - masculine, feminine, and neuter
     """
+
+    assocs = relationship('GenderGroupAssociation')
+    members = association_proxy('assocs', 'gender')
 
 
 class Case(EnumBase):
@@ -366,7 +385,7 @@ class Stem(SimpleBase):
     not. Verb roots are stored in :class:`Root`.
     """
 
-    gender_id = Column(ForeignKey(Gender.id))
+    genders_id = Column(ForeignKey(GenderGroup.id))
     pos_id = Column(ForeignKey(Tag.id))
 
     #: ``True`` iff a stem can produce its own words. For stems like "nara"
@@ -375,7 +394,7 @@ class Stem(SimpleBase):
     #: this value is ``False``.
     dependent = Column(Boolean, default=False)
 
-    gender = relationship(Gender)
+    genders = relationship(GenderGroup)
     pos = relationship(Tag)
     __mapper_args__ = {'polymorphic_on': pos_id}
 
@@ -442,6 +461,7 @@ class StemIrregularity(Base):
     fully_described = Column(Boolean)
 
     stem = relationship(Stem)
+
 
 # Completed forms
 # ---------------
@@ -600,15 +620,27 @@ class Participle(Nominal):
 # ------------
 # Code for building various many-to-many relationships
 
-class Paradigm(Base):
+class GenderGroupAssociation(Base):
 
-    """Represents an inflectional paradigm. This associates a root with a
-    particular class and voices.
-    """
-
-    __tablename__ = 'paradigm'
+    __tablename__ = 'gender_group_assocs'
 
     id = Column(Integer, primary_key=True)
+    group_id = Column(ForeignKey(GenderGroup.id))
+    gender_id = Column(ForeignKey(Gender.id))
+
+    group = relationship(GenderGroup)
+    gender = relationship(Gender)
+
+    def __init__(self, gender_id):
+        self.gender_id = gender_id
+
+
+class Paradigm(SimpleBase):
+
+    """Represents an inflectional paradigm. This associates a root with a
+    particular class and voice.
+    """
+
     root_id = Column(ForeignKey(Root.id), index=True)
     vclass_id = Column(ForeignKey(VClass.id))
     voice_id = Column(ForeignKey(Voice.id))
@@ -619,12 +651,10 @@ class Paradigm(Base):
     voice = relationship(Voice)
 
 
-class RootPrefixAssociation(Base):
+class RootPrefixAssociation(SimpleBase):
 
     """Associates a prefixed root with a list of prefixes."""
 
-    __tablename__ = 'root_prefix_association'
-    id = Column(Integer, primary_key=True)
     root_id = Column(ForeignKey(PrefixedRoot.id))
     prefix_id = Column(ForeignKey(VerbPrefix.id))
     position = Column(Integer)
@@ -635,12 +665,10 @@ class RootPrefixAssociation(Base):
         self.prefix = prefix
 
 
-class RootModAssociation(Base):
+class RootModAssociation(SimpleBase):
 
     """Associates a modified root with a list of modifications."""
 
-    __tablename__ = 'root_mod_association'
-    id = Column(Integer, primary_key=True)
     root_id = Column(ForeignKey(ModifiedRoot.id))
     modification_id = Column(ForeignKey(Modification.id))
     position = Column(Integer)
@@ -664,10 +692,10 @@ class SandhiType(EnumBase):
     """
 
 
-class SandhiRule(Base):
+class SandhiRule(SimpleBase):
 
     __tablename__ = 'sandhi'
-    id = Column(Integer, primary_key=True)
+
     first = Column(String)
     second = Column(String)
     result = Column(String)

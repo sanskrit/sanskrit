@@ -42,10 +42,14 @@ def add_enums(session, ctx):
     names = [c.__name__ for c in classes]
     mapper = dict(zip(names, classes))
 
+    # First pass: ordinary enums
     with open(ctx.config['ENUM_DATA']) as f:
         for enum in yaml.load(f):
             enum_name = enum['name']
-            cls = mapper[enum_name]
+            cls = mapper.get(enum_name, None)
+            if cls is None:
+                continue
+
             enum_abbr = cls.__tablename__
             ENUM[enum_abbr] = {}
 
@@ -56,6 +60,31 @@ def add_enums(session, ctx):
 
                 session.add(e)
                 session.flush()
+                ENUM[enum_abbr][abbr] = e.id
+
+            util.tick(cls.__name__)
+
+    session.commit()
+
+    # Second pass: gender groups
+    with open(ctx.config['ENUM_DATA']) as f:
+        for enum in yaml.load(f):
+            enum_name = enum['name']
+            cls = GenderGroup
+            if enum_name != cls.__name__:
+                continue
+
+            enum_abbr = cls.__tablename__
+            ENUM[enum_abbr] = {}
+
+            for item in enum['items']:
+                e = cls(name=item['name'], abbr=item['abbr'])
+                session.add(e)
+                session.flush()
+
+                e.members = [ENUM['gender'][x] for x in item['members']]
+
+                abbr = item['abbr']
                 ENUM[enum_abbr][abbr] = e.id
 
             util.tick(cls.__name__)
@@ -328,14 +357,15 @@ def _add_nominal_endings(session, ctx):
 def _add_irregular_nouns(session, ctx):
     """Add irregular nouns to the database."""
 
+    gender_group = ENUM['gender_group']
     gender = ENUM['gender']
     case = ENUM['case']
     number = ENUM['number']
 
     with open(ctx.config['IRREGULAR_NOUN_DATA']) as f:
         for noun in yaml.load_all(f):
-            gender_id = gender[noun['genders']]
-            stem = NounStem(name=noun['stem'], gender_id=gender_id)
+            genders_id = gender_group[noun['genders']]
+            stem = NounStem(name=noun['stem'], genders_id=genders_id)
             session.add(stem)
             session.flush()
 
@@ -366,7 +396,7 @@ def _add_regular_nouns(session, ctx):
 
     conn = ctx.engine.connect()
     ins = NounStem.__table__.insert()
-    gender = ENUM['gender']
+    gender_group = ENUM['gender_group']
     pos_id = Tag.NOUN
 
     buf = []
@@ -374,11 +404,11 @@ def _add_regular_nouns(session, ctx):
     with open(ctx.config['NOUN_DATA']) as f:
         for noun in yaml.load_all(f):
             name = noun['name']
-            gender_id = gender[noun['genders']]
+            genders_id = gender_group[noun['genders']]
             buf.append({
                 'name': name,
                 'pos_id': pos_id,
-                'gender_id': gender_id,
+                'genders_id': genders_id,
                 })
 
             i += 1
@@ -408,14 +438,15 @@ def add_nominals(session, ctx):
 def add_pronouns(session, ctx):
     """Add pronouns to the database."""
 
+    gender_group = ENUM['gender_group']
     gender = ENUM['gender']
     case = ENUM['case']
     number = ENUM['number']
 
     with open(ctx.config['PRONOUN_DATA']) as f:
         for pronoun in yaml.load_all(f):
-            gender_id = gender[pronoun['genders']]
-            stem = PronounStem(name=pronoun['stem'], gender_id=gender_id)
+            genders_id = gender_group[pronoun['genders']]
+            stem = PronounStem(name=pronoun['stem'], genders_id=genders_id)
             session.add(stem)
             session.flush()
             util.tick(stem.name)
