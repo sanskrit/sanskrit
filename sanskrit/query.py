@@ -8,8 +8,9 @@
     :license: MIT and BSD
 """
 
-from .schema import *
+from . import sounds
 from .generator import Generator
+from .schema import *
 
 
 class SimpleQuery(object):
@@ -20,6 +21,13 @@ class SimpleQuery(object):
         self.ctx = ctx
         self.session = ctx.session
         self.generator = Generator(ctx)
+
+        # Store IDs of irregular stems
+        irreg = self.session.query(StemIrregularity) \
+                    .filter(StemIrregularity.fully_described == True)
+
+        self.irregular_stems = set([x.id for x in irreg])
+        self.session.remove()
 
     def _fetch_nominal_paradigm(self, stem_id, gender_id):
         """Fetch a nominal paradigm from the database."""
@@ -45,6 +53,11 @@ class SimpleQuery(object):
                            .first()
         return stem
 
+    def _simplify(self, forms):
+        """Simplify the given forms by applying consonant reduction."""
+        for parse, name in forms.iteritems():
+            forms[parse] = name[:-1] + sounds.simplify(name[-1])
+
     def noun(self, stem_name, gender):
         """Query for nouns.
 
@@ -55,7 +68,14 @@ class SimpleQuery(object):
         if stem is None:
             return {}
 
-        return self.generator.nominal_paradigm(stem_name, gender)
+        if stem.id in self.irregular_stems:
+            gender_id = self.ctx.enum_id['gender'][gender]
+            returned = self._fetch_nominal_paradigm(stem.id, gender_id)
+        elif stem:
+            returned = self.generator.nominal_paradigm(stem_name, gender)
+
+        self._simplify(returned)
+        return returned
 
     def pronoun(self, stem_name, gender):
         """Query for pronouns.
@@ -68,9 +88,12 @@ class SimpleQuery(object):
             return {}
 
         gender_id = self.ctx.enum_id['gender'][gender]
-        return self._fetch_nominal_paradigm(stem.id, gender_id)
+        returned = self._fetch_nominal_paradigm(stem.id, gender_id)
 
-    def verb(self, root_name, mode, voice, vclass=None):
+        self._simplify(returned)
+        return returned
+
+    def verb(self, root_name, mode, voice, vclass=None, **kw):
         """Query for inflected verbs.
 
         :param root_name: the verb root
@@ -100,4 +123,5 @@ class SimpleQuery(object):
             returned[(person, number)] = verb.name
 
         session.close()
+        self._simplify(returned)
         return returned
