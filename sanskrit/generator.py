@@ -19,12 +19,12 @@ class Generator(object):
 
     def __init__(self, context):
         self.ctx = ctx = context
-        self.session = ctx.session_class()
+        session = ctx.session
 
         self.nominal_stem_trie = util.HashTrie()
         self.nominal_endings = {}
         seen = set()
-        for e in self.session.query(NominalEnding):
+        for e in session.query(NominalEnding):
             stem_type = e.stem_type
             if stem_type not in seen:
                 seen.add(stem_type)
@@ -33,6 +33,7 @@ class Generator(object):
 
             key = (e.gender_id, e.case_id, e.number_id)
             self.nominal_endings[stem_type][key] = e.name
+        session.remove()
 
     def nominal_paradigm(self, stem_name, gender):
         """Generate a full paradigm using normal Sanskrit rules. The

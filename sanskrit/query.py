@@ -18,7 +18,7 @@ class SimpleQuery(object):
 
     def __init__(self, ctx):
         self.ctx = ctx
-        self.session = ctx.session_class()
+        self.session = ctx.session
         self.generator = Generator(ctx)
 
     def _fetch_nominal_paradigm(self, stem_id, gender_id):

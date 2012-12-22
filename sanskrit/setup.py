@@ -438,7 +438,7 @@ def run(ctx):
     """Create and populate tables in the database."""
     ctx.drop_all()
     ctx.create_all()
-    session = ctx.session_class()
+    session = ctx.session
 
     functions = [
         ('Tags', add_tags),

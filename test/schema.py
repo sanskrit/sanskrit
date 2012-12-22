@@ -25,7 +25,7 @@ class SchemaTestCase(TestCase):
         """Create a new database."""
         self.ctx = Context(cfg)
         self.ctx.create_all()
-        self.session = self.ctx.session_class()
+        self.session = self.ctx.session
         S.add_enums(self.session, self.ctx)
         self.enum = S.ENUM
 

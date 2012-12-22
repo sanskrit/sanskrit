@@ -36,15 +36,15 @@ class Context(object):
     def __init__(self, config=None, connect=True):
         #: A :class:`dict` of various settings. By convention, all keys are
         #: uppercase. These are used to create :attr:`engine` and
-        #: :attr:`session_class`.
+        #: :attr:`session`.
         self.config = {}
 
         #: The :class:`~sqlalchemy.engine.base.Engine` that underlies
-        #: :attr:`session_class`.
+        #: the :attr:`session`.
         self.engine = None
 
         #: A :class:`~sqlalchemy.orm.session.Session` class.
-        self.session_class = None
+        self.session = None
 
         if isinstance(config, basestring):
             filepath = config
@@ -100,9 +100,9 @@ class Context(object):
     def connect(self):
         """Connect to the database."""
         self.engine = create_engine(self.config['DATABASE_URI'])
-        self.session_class = scoped_session(sessionmaker(autocommit=False,
-                                                         autoflush=False,
-                                                         bind=self.engine))
+        self.session = scoped_session(sessionmaker(autocommit=False,
+                                                   autoflush=False,
+                                                   bind=self.engine))
 
     def create_all(self):
         """Create tables for every model in `sanskrit.schema`."""
@@ -121,7 +121,7 @@ class Context(object):
         """Fetch and store enumerated data."""
         self._enum_id = {}
         self._enum_abbr = {}
-        session = self.session_class()
+        session = self.session
         for cls in EnumBase.__subclasses__():
             key = cls.__tablename__
             self._enum_id[key] = enum_id = {}

@@ -50,8 +50,7 @@ class Sandhi(object):
     def _query(self, ctx):
         """Query for :class:`SandhiRule`s and yield each as a
         :class:`dict`."""
-        session = ctx.session_class()
-        for rule in session.query(SandhiRule):
+        for rule in ctx.session.query(SandhiRule):
             yield (rule.first, rule.second, rule.result)
 
     def add_rules(self, *rules):

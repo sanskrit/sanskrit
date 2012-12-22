@@ -37,7 +37,7 @@ class SandhiTestCase(TestCase):
             ]
 
         ctx = Context(cfg)
-        session = ctx.session_class()
+        session = ctx.session
         ctx.create_all()
         S.add_enums(session, ctx)
         S.add_sandhi(session, ctx)
