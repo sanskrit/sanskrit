@@ -80,6 +80,7 @@ class Context(object):
         default('ROOT_DATA', 'verbal', 'roots.yml')
         default('PREFIXED_ROOT_DATA', 'verbal', 'prefixed-roots.yml')
         default('VERB_STEM_DATA', 'verbal', 'stems.yml')
+        default('VERB_ENDING_DATA', 'misc', 'verb-endings.yml')
         default('VERB_DATA', 'verbal', 'verbs.yml')
 
         default('ENUM_DATA', 'misc', 'enums.yml')

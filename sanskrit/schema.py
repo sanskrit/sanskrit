@@ -263,6 +263,32 @@ class NominalEnding(SimpleBase):
     number = relationship(Number)
 
 
+class VerbEnding(SimpleBase):
+
+    """A suffix for conjugated verbs of any kind. This corresponds to
+    Panini's **tiṅ**."""
+
+    #: Name of the stem category that uses this ending. This is useful
+    #: for partitioning the list of endings according to the stem under
+    #: consideration.
+    #:
+    #: The names of these groups depend on the initial data. The default
+    #: data uses these names:
+    #: - `'simple'` for classes 1, 4, 6, and 10
+    #: - `'complex'` for classes 2, 3, 45, 7, 8, and 9
+    #: - `'both'` for all classes
+    category = Column(String)
+    person_id = Column(ForeignKey(Person.id))
+    number_id = Column(ForeignKey(Number.id))
+    mode_id = Column(ForeignKey(Mode.id))
+    voice_id = Column(ForeignKey(Voice.id))
+
+    person = relationship(Person)
+    number = relationship(Number)
+    mode = relationship(Number)
+    voice = relationship(Voice)
+
+
 class Root(SimpleBase):
 
     """A verb root. This corresponds to Panini's **dhātu**:

@@ -114,6 +114,36 @@ def _add_verb_prefixes(session, ctx):
     return prefix_map
 
 
+def _add_verb_endings(session, ctx):
+    """Add verb endings to the database."""
+    with open(ctx.config['VERB_ENDING_DATA']) as f:
+        person = ENUM['person']
+        number = ENUM['number']
+        mode = ENUM['mode']
+        voice = ENUM['voice']
+
+        for group in yaml.load_all(f):
+            mode_id = mode[group['mode']]
+            voice_id = voice[group['voice']]
+            category = group['category']
+
+            for row in group['endings']:
+                kw = {
+                    'name': row['name'],
+                    'category': category,
+                    'person_id': person[row['person']],
+                    'number_id': number[row['number']],
+                    'mode_id': mode_id,
+                    'voice_id': voice_id,
+                    }
+                ending = VerbEnding(**kw)
+                session.add(ending)
+                session.flush()
+            util.tick((group['mode'], group['voice'], category))
+
+    session.commit()
+
+
 def _add_roots(session, ctx):
     """Add verb roots to the database."""
 
@@ -250,6 +280,12 @@ def add_verbal(session, ctx):
     - infinitives
     """
 
+    util.heading('Verb prefixes')
+    prefixes = _add_verb_prefixes(session, ctx)
+
+    util.heading('Verb endings')
+    _add_verb_endings(session, ctx)
+
     util.heading('Roots and paradigms')
     roots = _add_roots(session, ctx)
 
@@ -257,9 +293,6 @@ def add_verbal(session, ctx):
     _add_verbs(session, ctx, roots)
 
     return
-
-    util.heading('Verb prefixes')
-    prefixes = _add_verb_prefixes(session, ctx)
 
     util.heading('Prefixed roots')
     _add_prefixed_roots(session, ctx, root_map=roots, prefix_map=prefixes)
