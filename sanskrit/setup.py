@@ -338,6 +338,13 @@ def _add_irregular_nouns(session, ctx):
             stem = NounStem(name=noun['stem'], gender_id=gender_id)
             session.add(stem)
             session.flush()
+
+            # Mark the stem as irregular
+            complete = noun['complete']
+            irreg = StemIrregularity(stem=stem, fully_described=complete)
+            session.add(irreg)
+            session.flush()
+
             util.tick(stem.name)
 
             for form in noun['forms']:
