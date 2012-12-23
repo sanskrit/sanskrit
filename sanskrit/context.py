@@ -67,27 +67,25 @@ class Context(object):
                     self.config[key] = getattr(config, key)
 
         def default(name, *args):
-            path = os.path.join(self.config['DATA_PATH'], *args)
+            path = os.path.join(self.config['DATA_PATH'], 'lang', *args)
             self.config.setdefault(name, path)
 
-        default('MONIER_XML_PATH', 'mw', 'monier.xml')
-
-        default('NOUN_DATA', 'nominal', 'nouns.yml')
-        default('ADJECTIVE_DATA', 'nominal', 'adjectives.yml')
-        default('PRONOUN_DATA', 'nominal', 'pronouns.yml')
-        default('IRREGULAR_NOUN_DATA', 'nominal', 'irregular-nouns.yml')
-
-        default('ROOT_DATA', 'verbal', 'roots.yml')
-        default('PREFIXED_ROOT_DATA', 'verbal', 'prefixed-roots.yml')
-        default('VERB_STEM_DATA', 'verbal', 'stems.yml')
-        default('VERB_ENDING_DATA', 'misc', 'verb-endings.yml')
-        default('VERB_DATA', 'verbal', 'verbs.yml')
-
-        default('ENUM_DATA', 'misc', 'enums.yml')
-        default('INDECLINABLE_DATA', 'misc', 'indeclinables.yml')
-        default('VERB_PREFIX_DATA', 'misc', 'verb-prefixes.yml')
-        default('SANDHI_DATA', 'misc', 'sandhi.yml')
-        default('NOMINAL_ENDING_DATA', 'misc', 'nominal-endings.yml')
+        default('ADJECTIVE_STEMS', 'adjective-stems.csv')
+        default('ENUMS', 'enums.yml')
+        default('INDECLINABLES', 'indeclinables.yml')
+        default('IRREGULAR_ADJECTIVES', 'irregular-adjectives.yml')
+        default('IRREGULAR_NOUNS', 'irregular-nouns.yml')
+        default('NOMINAL_ENDINGS', 'nominal-endings.yml')
+        default('NOUN_STEMS', 'noun-stems.csv')
+        default('PARTICIPLE_STEMS', 'participle-stems.csv')
+        default('PREFIXED_ROOTS', 'prefixed-roots.yml')
+        default('PRONOUNS', 'pronouns.yml')
+        default('ROOTS', 'roots.yml')
+        default('SANDHI', 'sandhi.yml')
+        default('VERB_ENDINGS', 'verb-endings.yml')
+        default('VERB_PREFIXES', 'verb-prefixes.yml')
+        default('VERB_STEMS', 'verb-stems.yml')
+        default('VERBS', 'verbs.csv')
 
         if connect and 'DATABASE_URI' in self.config:
             self.connect()

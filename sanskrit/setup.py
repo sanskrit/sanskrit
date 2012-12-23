@@ -1,9 +1,11 @@
 """
-sanskrit.db.setup
-~~~~~~~~~~~~~~~~~
+sanskrit.setup
+~~~~~~~~~~~~~~
 
 Setup code for various Sanskrit data.
 """
+
+import sys
 
 import yaml
 
@@ -17,14 +19,18 @@ ENUM = {}
 # Miscellaneous
 # -------------
 
-def add_tags(session, ctx):
+def add_tags(ctx):
+    session = ctx.session
     for key in dir(Tag):
         if key.isupper():
             id = getattr(Tag, key)
             session.add(Tag(id=id, name=key.lower()))
 
+    session.commit()
+    session.close()
 
-def add_enums(session, ctx):
+
+def add_enums(ctx):
     """Add enumerated data to the database. Among others, this includes:
 
     - persons
@@ -37,13 +43,14 @@ def add_enums(session, ctx):
     and any other data with small, known limits.
     """
 
+    session = ctx.session
     classes = [Modification, VClass, Person, Number, Mode, Voice,
                Gender, Case, SandhiType]
     names = [c.__name__ for c in classes]
     mapper = dict(zip(names, classes))
 
     # First pass: ordinary enums
-    with open(ctx.config['ENUM_DATA']) as f:
+    with open(ctx.config['ENUMS']) as f:
         for enum in yaml.load(f):
             enum_name = enum['name']
             cls = mapper.get(enum_name, None)
@@ -67,7 +74,7 @@ def add_enums(session, ctx):
     session.commit()
 
     # Second pass: gender groups
-    with open(ctx.config['ENUM_DATA']) as f:
+    with open(ctx.config['ENUMS']) as f:
         for enum in yaml.load(f):
             enum_name = enum['name']
             cls = GenderGroup
@@ -93,11 +100,12 @@ def add_enums(session, ctx):
     session.close()
 
 
-def add_sandhi(session, ctx):
+def add_sandhi(ctx):
     """Add sandhi rules to the database."""
+    session = ctx.session
     stype = ENUM['sandhi_type']
 
-    with open(ctx.config['SANDHI_DATA']) as f:
+    with open(ctx.config['SANDHI']) as f:
         for ruleset in yaml.load_all(f):
             rule_type = ruleset['type']
             util.tick(rule_type)
@@ -110,9 +118,11 @@ def add_sandhi(session, ctx):
     session.close()
 
 
-def add_indeclinables(session, ctx):
+def add_indeclinables(ctx):
     """Add indeclinables to the database."""
-    with open(ctx.config['INDECLINABLE_DATA']) as f:
+    session = ctx.session
+
+    with open(ctx.config['INDECLINABLES']) as f:
         for i, name in enumerate(yaml.load(f)):
             ind = Indeclinable(name=name)
             session.add(ind)
@@ -123,13 +133,15 @@ def add_indeclinables(session, ctx):
     session.close()
 
 
-# Verbal forms
+# Verbal data
 # ------------
 
-def _add_verb_prefixes(session, ctx):
+def add_verb_prefixes(ctx):
     """Add verb prefixes to the database."""
+    session = ctx.session
     prefix_map = {}
-    with open(ctx.config['VERB_PREFIX_DATA']) as f:
+
+    with open(ctx.config['VERB_PREFIXES']) as f:
         for group in yaml.load_all(f):
             util.tick(group['name'])
             for name in group['items']:
@@ -143,9 +155,11 @@ def _add_verb_prefixes(session, ctx):
     return prefix_map
 
 
-def _add_verb_endings(session, ctx):
+def add_verb_endings(ctx):
     """Add verb endings to the database."""
-    with open(ctx.config['VERB_ENDING_DATA']) as f:
+    session = ctx.session
+
+    with open(ctx.config['VERB_ENDINGS']) as f:
         person = ENUM['person']
         number = ENUM['number']
         mode = ENUM['mode']
@@ -171,16 +185,18 @@ def _add_verb_endings(session, ctx):
             util.tick((group['mode'], group['voice'], category))
 
     session.commit()
+    session.close()
 
 
-def _add_roots(session, ctx):
+def add_roots(ctx):
     """Add verb roots to the database."""
 
+    session = ctx.session
     vclass = ENUM['vclass']
     voice = ENUM['voice']
 
     root_map = {}  # (name, hom) -> id
-    with open(ctx.config['ROOT_DATA']) as f:
+    with open(ctx.config['ROOTS']) as f:
         for i, item in enumerate(yaml.load_all(f)):
             name = item['name']
             paradigms = item['paradigms']
@@ -206,7 +222,7 @@ def _add_roots(session, ctx):
     return root_map
 
 
-def _add_prefixed_roots(session, ctx, root_map=None, prefix_map=None):
+def add_prefixed_roots(ctx, root_map=None, prefix_map=None):
     """Add prefixed roots to the database."""
 
     homs = [None] + [str(i) for i in range(1, 10)]
@@ -214,7 +230,7 @@ def _add_prefixed_roots(session, ctx, root_map=None, prefix_map=None):
     # Contains roots that weren't added by `add_roots`.
     missed = set()
 
-    with open(ctx.config['PREFIXED_ROOT_DATA']) as f:
+    with open(ctx.config['PREFIXED_ROOTS']) as f:
         for i, item in enumerate(yaml.load_all(f)):
             name = item['name']
             basis = item['basis']
@@ -252,52 +268,93 @@ def _add_prefixed_roots(session, ctx, root_map=None, prefix_map=None):
     print missed
 
 
-def _add_modified_roots(session, ctx):
+def add_modified_roots(ctx):
     """Add modified roots to the database."""
 
 
-def _add_verbs(session, ctx, root_map=None):
+def add_verbs(ctx, root_map=None):
     """Add inflected verbs to the database."""
 
+    session = ctx.session
     vclass = ENUM['vclass']
     person = ENUM['person']
     number = ENUM['number']
     mode = ENUM['mode']
     voice = ENUM['voice']
+    skipped = set()
     i = 0
 
-    with open(ctx.config['VERB_DATA']) as f:
-        for item in yaml.load_all(f):
-            root = item['name']
-            hom = item['hom']
+    for row in util.read_csv(ctx.config['VERBS']):
+        root = row['root']
+        hom = row['hom']
 
-            try:
-                root_id = root_map[(root, hom)]
-            except KeyError:
-                print 'SKIPPED:', root, hom
-                continue
+        try:
+            root_id = root_map[(root, hom)]
+        except KeyError:
+            skipped.add((root, hom))
+            continue
 
-            for row in item['forms']:
-                form = {
-                    'name': row['name'],
-                    'root_id': root_id,
-                    'vclass_id': vclass[row['vclass']],
-                    'person_id': person[row['person']],
-                    'number_id': number[row['number']],
-                    'mode_id': mode[row['mode']],
-                    'voice_id': voice[row['voice']]
-                }
-                session.add(Verb(**form))
-                i += 1
+        data = {
+            'name': row['name'],
+            'root_id': root_id,
+            'vclass_id': vclass[row['vclass']],
+            'person_id': person[row['person']],
+            'number_id': number[row['number']],
+            'mode_id': mode[row['mode']],
+            'voice_id': voice[row['voice']]
+        }
+        session.add(Verb(**data))
 
-            if i % 100 == 0:
-                util.tick(root)
+        i += 1
+        if i % 1000 == 0:
+            util.tick(row['name'])
+            session.commit()
 
     session.commit()
     session.close()
+    print 'Skipped', len(skipped), 'roots.'
 
 
-def add_verbal(session, ctx):
+def add_participle_stems(ctx, root_map=None):
+    """"""
+
+    session = ctx.session
+    root_map = root_map or {}
+    mode = ENUM['mode']
+    voice = ENUM['voice']
+    skipped = set()
+    i = 0
+
+    for row in util.read_csv(ctx.config['PARTICIPLE_STEMS']):
+        root = row['root']
+        hom = row['hom']
+
+        try:
+            root_id = root_map[(root, hom)]
+        except KeyError:
+            skipped.add((root, hom))
+            continue
+
+        data = {
+            'name': row['name'],
+            'root_id': root_id,
+            'mode_id': mode[row['mode']],
+            'voice_id': voice[row['voice']]
+            }
+
+        session.add(ParticipleStem(**data))
+
+        i += 1
+        if i % 100 == 0:
+            util.tick(row['name'])
+            session.commit()
+
+    session.commit()
+    session.close()
+    print 'Skipped', len(skipped), 'roots.'
+
+
+def add_verbal(ctx):
     """Add all verb data to the database, including:
 
     - roots
@@ -305,32 +362,57 @@ def add_verbal(session, ctx):
     - modified roots
     - prefixed modified roots
     - inflected verbs
+    - participles
     - gerunds
     - infinitives
     """
 
     util.heading('Verb prefixes')
-    prefixes = _add_verb_prefixes(session, ctx)
+    prefixes = add_verb_prefixes(ctx)
 
     util.heading('Verb endings')
-    _add_verb_endings(session, ctx)
+    add_verb_endings(ctx)
 
     util.heading('Roots and paradigms')
-    roots = _add_roots(session, ctx)
+    roots = add_roots(ctx)
 
     util.heading('Verbs')
-    _add_verbs(session, ctx, roots)
+    add_verbs(ctx, roots)
+
+    util.heading('Participle stems')
+    add_participle_stems(ctx, roots)
 
     return
 
     util.heading('Prefixed roots')
-    _add_prefixed_roots(session, ctx, root_map=roots, prefix_map=prefixes)
+    add_prefixed_roots(ctx, root_map=roots, prefix_map=prefixes)
 
 
 # Nominal data
 # ------------
-def _add_nominal_endings(session, ctx):
-    with open(ctx.config['NOMINAL_ENDING_DATA']) as f:
+
+def add_nominals(ctx):
+    util.heading('Nominal endings')
+    add_nominal_endings(ctx)
+
+    util.heading('Noun stems')
+    add_noun_stems(ctx)
+    util.heading('Irregular nouns')
+    add_irregular_nouns(ctx)
+
+    util.heading('Adjective stems')
+    add_adjective_stems(ctx)
+    util.heading('Irregular adjectives')
+    add_irregular_adjectives(ctx)
+
+    util.heading('Pronouns')
+    add_pronouns(ctx)
+
+
+def add_nominal_endings(ctx):
+    """Add nominal endings to the database."""
+    session = ctx.session
+    with open(ctx.config['NOMINAL_ENDINGS']) as f:
         gender = ENUM['gender']
         case = ENUM['case']
         number = ENUM['number']
@@ -352,20 +434,51 @@ def _add_nominal_endings(session, ctx):
             util.tick(stem_type)
 
     session.commit()
+    session.close()
 
 
-def _add_irregular_nouns(session, ctx):
+def add_noun_stems(ctx):
+    """Add regular noun stems to the database."""
+
+    conn = ctx.engine.connect()
+    ins = NounStem.__table__.insert()
+    gender_group = ENUM['gender_group']
+    pos_id = Tag.NOUN
+
+    buf = []
+    i = 0
+    for noun in util.read_csv(ctx.config['NOUN_STEMS']):
+        name = noun['name']
+        genders_id = gender_group[noun['genders']]
+        buf.append({
+            'name': name,
+            'pos_id': pos_id,
+            'genders_id': genders_id,
+            })
+
+        i += 1
+        if i % 500 == 0:
+            util.tick(name)
+            conn.execute(ins, buf)
+            buf = []
+
+    if buf:
+        conn.execute(ins, buf)
+
+
+def add_irregular_nouns(ctx):
     """Add irregular nouns to the database."""
 
+    session = ctx.session
     gender_group = ENUM['gender_group']
     gender = ENUM['gender']
     case = ENUM['case']
     number = ENUM['number']
 
-    with open(ctx.config['IRREGULAR_NOUN_DATA']) as f:
+    with open(ctx.config['IRREGULAR_NOUNS']) as f:
         for noun in yaml.load_all(f):
             genders_id = gender_group[noun['genders']]
-            stem = NounStem(name=noun['stem'], genders_id=genders_id)
+            stem = NounStem(name=noun['name'], genders_id=genders_id)
             session.add(stem)
             session.flush()
 
@@ -389,64 +502,84 @@ def _add_irregular_nouns(session, ctx):
                 session.flush()
 
     session.commit()
+    session.close()
 
 
-def _add_regular_nouns(session, ctx):
-    """Add regular nouns to the database."""
+def add_adjective_stems(ctx):
+    """Add adjective stems to the database."""
 
     conn = ctx.engine.connect()
-    ins = NounStem.__table__.insert()
-    gender_group = ENUM['gender_group']
-    pos_id = Tag.NOUN
+    ins = AdjectiveStem.__table__.insert()
+    pos_id = Tag.ADJECTIVE
 
     buf = []
     i = 0
-    with open(ctx.config['NOUN_DATA']) as f:
-        for noun in yaml.load_all(f):
-            name = noun['name']
-            genders_id = gender_group[noun['genders']]
-            buf.append({
-                'name': name,
-                'pos_id': pos_id,
-                'genders_id': genders_id,
-                })
+    for adj in util.read_csv(ctx.config['ADJECTIVE_STEMS']):
+        name = adj['name']
+        buf.append({
+            'name': name,
+            'pos_id': pos_id,
+            })
 
-            i += 1
-            if i % 500 == 0:
-                util.tick(name)
-                conn.execute(ins, buf)
-                buf = []
+        i += 1
+        if i % 500 == 0:
+            util.tick(name)
+            conn.execute(ins, buf)
+            buf = []
 
     if buf:
         conn.execute(ins, buf)
 
 
-def add_nominals(session, ctx):
-    util.heading('Nominal endings')
-    _add_nominal_endings(session, ctx)
+def add_irregular_adjectives(ctx):
+    """Add regular irregular adjectives to the database."""
 
-    util.heading('Irregular nouns')
-    _add_irregular_nouns(session, ctx)
+    session = ctx.session
+    gender = ENUM['gender']
+    case = ENUM['case']
+    number = ENUM['number']
 
-    util.heading('Regular nouns')
-    _add_regular_nouns(session, ctx)
+    with open(ctx.config['IRREGULAR_ADJECTIVES']) as f:
+        for adj in yaml.load_all(f):
+            stem = AdjectiveStem(name=adj['name'])
+            session.add(stem)
+            session.flush()
+
+            # Mark the stem as irregular
+            complete = adj['complete']
+            irreg = StemIrregularity(stem=stem, fully_described=complete)
+            session.add(irreg)
+            session.flush()
+
+            util.tick(stem.name)
+
+            for form in adj['forms']:
+                name = form['name']
+                gender_id = gender[form['gender']]
+                case_id = case[form['case']]
+                number_id = number[form['number']]
+
+                result = Adjective(stem=stem, name=name, gender_id=gender_id,
+                                   case_id=case_id, number_id=number_id)
+                session.add(result)
+
+    session.commit()
+    session.close()
 
 
-# Pronominal forms
-# ----------------
-
-def add_pronouns(session, ctx):
+def add_pronouns(ctx):
     """Add pronouns to the database."""
 
+    session = ctx.session
     gender_group = ENUM['gender_group']
     gender = ENUM['gender']
     case = ENUM['case']
     number = ENUM['number']
 
-    with open(ctx.config['PRONOUN_DATA']) as f:
+    with open(ctx.config['PRONOUNS']) as f:
         for pronoun in yaml.load_all(f):
             genders_id = gender_group[pronoun['genders']]
-            stem = PronounStem(name=pronoun['stem'], genders_id=genders_id)
+            stem = PronounStem(name=pronoun['name'], genders_id=genders_id)
             session.add(stem)
             session.flush()
             util.tick(stem.name)
@@ -461,26 +594,33 @@ def add_pronouns(session, ctx):
                                  case_id=case_id, number_id=number_id)
                 session.add(result)
                 session.flush()
-        session.commit()
+
+    session.commit()
     session.close()
 
+
+# Main
+# ----
 
 def run(ctx):
     """Create and populate tables in the database."""
     ctx.drop_all()
     ctx.create_all()
-    session = ctx.session
 
     functions = [
         ('Tags', add_tags),
         ('Enumerated data', add_enums),
-        ('Nominal data', add_nominals),
-        ('Sandhi rules', add_sandhi),
+        ('Sandhi', add_sandhi),
         ('Indeclinables', add_indeclinables),
         ('Verbal data', add_verbal),
-        ('Pronoun data', add_pronouns),
+        ('Nominal data', add_nominals),
         ]
 
     for name, f in functions:
-        util.heading(name, '=')
-        f(session, ctx)
+        util.heading(name, '~')
+        f(ctx)
+
+
+if __name__ == '__main__':
+    ctx = Context(sys.argv[1])
+    run(ctx)
