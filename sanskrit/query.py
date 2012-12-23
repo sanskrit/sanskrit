@@ -8,6 +8,8 @@
     :license: MIT and BSD
 """
 
+from collections import defaultdict
+
 from . import sounds
 from .generator import Generator
 from .schema import *
@@ -125,3 +127,61 @@ class SimpleQuery(object):
         session.close()
         self._simplify(returned)
         return returned
+
+    def verb_summary(self, root_name, vclass=None):
+        """Query for a summary of a verb's behavior.
+
+        The function returns the following information:
+
+        - the root ID
+        - the 3rd. sg. forms of all verbs produced from the plain root
+        - the stems of all participles produced from the plain root
+
+        :param root: the verb root
+        :param vclass: the verb class to use. This can be used to
+                       distinguish between homophonous roots, such as
+                       'kR' ("do") and 'kR' ("praise").
+        """
+        verbs = defaultdict(list)
+        participles = defaultdict(list)
+
+        ctx = self.ctx
+        session = self.session
+
+        # abbr -> ID
+        ei_person = ctx.enum_id['person']
+        ei_number = ctx.enum_id['number']
+
+        # ID -> abbr
+        ea_mode = ctx.enum_abbr['mode']
+        ea_voice = ctx.enum_abbr['voice']
+
+        # Root
+        root = session.query(Root).filter(Root.name == root_name).first()
+        root_id = root.id
+
+        # Verbs
+        results = session.query(Verb).filter(Verb.root_id == root_id) \
+                         .filter(Verb.person_id == ei_person['3']) \
+                         .filter(Verb.number_id == ei_number['s'])\
+
+        for r in results:
+            mode = ea_mode[r.mode_id]
+            voice = ea_voice[r.voice_id]
+            verbs[(mode, voice)].append(r.name)
+
+        # Participles
+        results = session.query(ParticipleStem) \
+                         .filter(ParticipleStem.root_id == root_id)
+
+        for r in results:
+            mode = ea_mode[r.mode_id]
+            voice = ea_voice[r.voice_id]
+            participles[(mode, voice)].append(r.name)
+
+        session.close()
+        return {
+            'root_id': root_id,
+            'verbs': verbs,
+            'participles': participles,
+            }
