@@ -271,6 +271,8 @@ class NominalEnding(SimpleBase):
     """A suffix for regular nouns and adjectives This corresponds to
     Panini's **sup**."""
 
+    CONSONANT_STEM_TYPE = '$cons'
+
     stem_type = Column(String)
     gender_id = Column(ForeignKey(Gender.id))
     case_id = Column(ForeignKey(Case.id))

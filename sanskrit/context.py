@@ -5,7 +5,7 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from .schema import Base, EnumBase
+from .schema import Base, EnumBase, GenderGroup
 
 
 class Context(object):
@@ -119,6 +119,8 @@ class Context(object):
         """Fetch and store enumerated data."""
         self._enum_id = {}
         self._enum_abbr = {}
+        self._gender_set = {}
+
         session = self.session
         for cls in EnumBase.__subclasses__():
             key = cls.__tablename__
@@ -127,6 +129,12 @@ class Context(object):
             for item in session.query(cls).all():
                 enum_id[item.name] = enum_id[item.abbr] = item.id
                 enum_abbr[item.id] = enum_abbr[item.name] = item.abbr
+
+        for group in session.query(GenderGroup):
+            member_ids = set([x.id for x in group.members])
+            self._gender_set[group.id] = member_ids
+
+        session.remove()
 
     @property
     def enum_id(self):
@@ -145,3 +153,11 @@ class Context(object):
         except AttributeError:
             self._build_enums()
             return self._enum_abbr
+
+    @property
+    def gender_set(self):
+        try:
+            return self._gender_set
+        except AttributeError:
+            self._build_enums()
+            return self._gender_set
