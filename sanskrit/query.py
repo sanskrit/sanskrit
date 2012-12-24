@@ -58,7 +58,7 @@ class SimpleQuery(object):
     def _simplify(self, forms):
         """Simplify the given forms by applying consonant reduction."""
         for parse, name in forms.iteritems():
-            forms[parse] = name[:-1] + sounds.simplify(name[-1])
+            forms[parse] = sounds.Term(name).simplify()
 
     def noun(self, stem_name, gender):
         """Query for nouns.
@@ -69,6 +69,9 @@ class SimpleQuery(object):
         stem = self._nominal_stem(stem_name, NounStem)
         if stem is None:
             return {}
+
+        print self.session.query(NounStem)\
+                           .filter(NounStem.name == stem_name).all()
 
         if stem.id in self.irregular_stems:
             gender_id = self.ctx.enum_id['gender'][gender]

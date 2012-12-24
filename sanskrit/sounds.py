@@ -129,6 +129,15 @@ vrddhi = letter_transform('vrddhi',
 del letter_transform
 
 
+# Term transformations
+# --------------------
+
+class Term(str):
+    def simplify(self):
+        """Simplify the given string using consonant reduction."""
+        return self[:-1] + simplify(self[-1])
+
+
 # Meter and metrical properties
 # -----------------------------
 
