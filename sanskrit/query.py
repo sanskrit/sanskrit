@@ -161,6 +161,8 @@ class SimpleQuery(object):
 
         # Root
         root = session.query(Root).filter(Root.name == root_name).first()
+        if root is None:
+            return {}
         root_id = root.id
 
         # Verbs

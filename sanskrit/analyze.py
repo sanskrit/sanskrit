@@ -70,7 +70,6 @@ class SimpleAnalyzer(object):
         returned.extend(self.analyze_word(word))
         returned.extend(self.analyze_nominal(word))
         returned.extend(self.analyze_verb(word))
-
         return returned
 
     def analyze_word(self, word):
