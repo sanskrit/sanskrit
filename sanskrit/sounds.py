@@ -60,6 +60,9 @@ def key_fn(s):
 
 def letter_transform(name, docstring=None):
     data = {
+        'shorten': dict(zip('AIUFX', 'aiufx')),
+        'semivowel': dict(zip('iIuUfFxXeEoO',
+                              'y y v v r r l l ay Ay av Av'.split())),
         'aspirate': dict(zip('kgcjwqtdpb',
                              'KGCJWQTDPB')),
         'deaspirate': dict(zip('KGCJWQTDPB',
@@ -77,7 +80,8 @@ def letter_transform(name, docstring=None):
         'guna': dict(zip('i I u U  f  F  x  X'.split(),
                          'e e o o ar ar al al'.split())),
         'vrddhi': dict(zip('a i I u U  f  F  x  X e o'.split(),
-                           'A E E O O Ar Ar Al Al E O'.split()))
+                           'A E E O O Ar Ar Al Al E O'.split())),
+        'samprasarana': dict(zip('yrlv', 'ifxu'))
     }
 
     get = data[name].get
@@ -96,6 +100,8 @@ def letter_transform(name, docstring=None):
     func.__doc__ = docstring
     return func
 
+semivowel = letter_transform('semivowel')
+shorten = letter_transform('shorten')
 aspirate = letter_transform('aspirate')
 deaspirate = letter_transform('deaspirate')
 voice = letter_transform('voice')
@@ -123,6 +129,11 @@ guna = letter_transform('guna',
 vrddhi = letter_transform('vrddhi',
     docstring="""
     Apply vrddhi to the given letter, if possible.
+    """
+)
+samprasarana = letter_transform('samprasarana',
+    docstring="""
+    Apply samprasarana to the given letter, if possible.
     """
 )
 
