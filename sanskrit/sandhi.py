@@ -94,10 +94,18 @@ class Sandhi(object):
         apply_s = False
         apply_n = False
         had_n = False  # Used for double retroflexion ('nisanna' -> 'nizaRRa')
+        had_s = False  # Used for 't' retroflexion
         for i, L in enumerate(letters[:-1]):
+            # "t" retroflexion after "s" retroflexion
+            if had_s:
+                had_s = False
+                retro_dict = dict(zip('tT', 'wW'))
+                letters[i] = retro_dict.get(L, L)
+
             # "s" retroflexion
             if apply_s and L == 's':
                 letters[i] = L = 'z'
+                had_s = True
             apply_s = L in s_trigger
 
             # "n" retroflexion
