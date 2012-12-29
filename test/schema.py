@@ -26,7 +26,7 @@ class SchemaTestCase(TestCase):
         self.ctx = Context(cfg)
         self.ctx.create_all()
         self.session = self.ctx.session
-        S.add_enums(self.session, self.ctx)
+        S.add_enums(self.ctx)
         self.enum = S.ENUM
 
     def add_root(self, name):

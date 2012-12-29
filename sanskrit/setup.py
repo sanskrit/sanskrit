@@ -297,7 +297,7 @@ def add_verbs(ctx, root_map=None):
         data = {
             'name': row['name'],
             'root_id': root_id,
-            'vclass_id': vclass[row['vclass']],
+            'vclass_id': vclass[row['vclass']] if row['vclass'] else None,
             'person_id': person[row['person']],
             'number_id': number[row['number']],
             'mode_id': mode[row['mode']],

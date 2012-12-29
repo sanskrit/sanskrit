@@ -12,6 +12,7 @@ import os
 from sanskrit import Context
 from . import TestCase, config as cfg
 
+
 class ContextTestCase(TestCase):
 
     """Constructs a context in a variety of ways."""
@@ -20,12 +21,6 @@ class ContextTestCase(TestCase):
         """Compare default config values to their expected values."""
         self.assertEqual(ctx.config['DATABASE_URI'], cfg.DATABASE_URI)
         self.assertEqual(ctx.config['DATA_PATH'], cfg.DATA_PATH)
-
-        monier_xml_path = os.path.join(cfg.DATA_PATH, 'mw', 'monier.xml')
-        monier_greek_path = os.path.join(cfg.DATA_PATH, 'mw', 'greek.yml')
-        enum_path = os.path.join(cfg.DATA_PATH, 'misc', 'enum.yml')
-
-        self.assertEqual(ctx.config['MONIER_XML_PATH'], monier_xml_path)
 
     def testFile(self):
         """Test creating from a filename."""
