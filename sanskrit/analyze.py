@@ -36,9 +36,9 @@ class SimpleAnalyzer(object):
     a secondary concern (e.g. when on a web server).
     """
 
-    def __init__(self, ctx, session=None):
+    def __init__(self, ctx):
         self.ctx = ctx
-        self.session = session or ctx.session
+        self.session = ctx.session
 
         self.nominal_endings = util.HashTrie()
         for e in self.session.query(NominalEnding):
