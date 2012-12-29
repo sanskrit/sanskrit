@@ -2,6 +2,7 @@ import nose
 import os
 from nose.plugins import Plugin
 
+
 class PyPlugin(Plugin):
     """Run tests with all modules in the test folder."""
 

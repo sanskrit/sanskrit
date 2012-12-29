@@ -1,10 +1,9 @@
-from . import util
-from .schema import NominalEnding
+# -*- coding: utf-8 -*-
+"""
+    sanskrit.generate
+    ~~~~~~~~~~~~~~~~~
 
-
-class Generator(object):
-
-    """A generator for various Sanskrit forms.
+    Generators for various Sanskrit forms.
 
     Due to its inflectional nature, Sanskrit has tens of millions of
     different forms. It is not always feasible to store them in the
@@ -14,11 +13,35 @@ class Generator(object):
     adjective stems and the 72 endings that they use, we can store 2072
     forms instead of 144k forms.
 
+    :license: MIT and BSD
+"""
+
+from . import util
+from .schema import NominalEnding
+
+
+class Generator(object):
+
+    """Template for a generator."""
+
+    def __init__(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def paradigm(self, *args, **kwargs):
+        """Generate a full paradigm."""
+        raise NotImplementedError
+
+
+class NominalGenerator(Generator):
+
+    """
+    A generator for nominal forms.
+
     :param context: some :class:`~sanskrit.Context`.
     """
 
-    def __init__(self, context):
-        self.ctx = ctx = context
+    def __init__(self, ctx):
+        self.ctx = ctx
         session = ctx.session
 
         self.nominal_stem_trie = util.HashTrie()
@@ -35,7 +58,7 @@ class Generator(object):
             self.nominal_endings[stem_type][key] = e.name
         session.remove()
 
-    def nominal_paradigm(self, stem_name, gender):
+    def paradigm(self, stem_name, gender):
         """Generate a full paradigm using normal Sanskrit rules. The
         function treats irregular stems as regular.
         """

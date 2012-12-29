@@ -11,7 +11,7 @@
 from collections import defaultdict
 
 from . import sounds
-from .generator import Generator
+from .generate import NominalGenerator
 from .schema import *
 
 
@@ -22,7 +22,7 @@ class SimpleQuery(object):
     def __init__(self, ctx):
         self.ctx = ctx
         self.session = ctx.session
-        self.generator = Generator(ctx)
+        self.nominal = NominalGenerator(ctx)
 
         # Store IDs of irregular stems
         irreg = self.session.query(StemIrregularity) \
@@ -77,7 +77,7 @@ class SimpleQuery(object):
             gender_id = self.ctx.enum_id['gender'][gender]
             returned = self._fetch_nominal_paradigm(stem.id, gender_id)
         elif stem:
-            returned = self.generator.nominal_paradigm(stem_name, gender)
+            returned = self.nominal.paradigm(stem_name, gender)
 
         self._simplify(returned)
         return returned
