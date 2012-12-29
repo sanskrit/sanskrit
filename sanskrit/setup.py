@@ -315,6 +315,35 @@ def add_verbs(ctx, root_map=None):
     print 'Skipped', len(skipped), 'roots.'
 
 
+def add_verbal_indeclinables(ctx, root_map=None):
+    session = ctx.session
+    root_map = root_map or {}
+    skipped = set()
+
+    items = [
+        ('GERUNDS', Gerund),
+        ('INFINITIVES', Infinitive),
+        ]
+
+    for file_key, cls in items:
+        for row in util.read_csv(ctx.config[file_key]):
+            root = row['root']
+            hom = row['hom']
+
+            try:
+                root_id = root_map[(root, hom)]
+            except KeyError:
+                skipped.add((root, hom))
+                continue
+
+            datum = {
+                'name': row['name'],
+                'root_id': root_id
+                }
+            session.add(cls(**datum))
+    session.commit()
+
+
 def add_participle_stems(ctx, root_map=None):
     """"""
 
@@ -381,6 +410,9 @@ def add_verbal(ctx):
 
     util.heading('Participle stems')
     add_participle_stems(ctx, roots)
+
+    util.heading('Verbal indeclinables')
+    add_verbal_indeclinables(ctx, roots)
 
     return
 

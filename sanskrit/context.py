@@ -72,9 +72,12 @@ class Context(object):
 
         default('ADJECTIVE_STEMS', 'adjective-stems.csv')
         default('ENUMS', 'enums.yml')
+        default('GERUNDS', 'gerunds.csv')
         default('INDECLINABLES', 'indeclinables.yml')
+        default('INFINITIVES', 'infinitives.csv')
         default('IRREGULAR_ADJECTIVES', 'irregular-adjectives.yml')
         default('IRREGULAR_NOUNS', 'irregular-nouns.yml')
+        default('MODIFIED_ROOTS', 'modified-roots.yml')
         default('NOMINAL_ENDINGS', 'nominal-endings.yml')
         default('NOUN_STEMS', 'noun-stems.csv')
         default('PARTICIPLE_STEMS', 'participle-stems.csv')
