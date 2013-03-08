@@ -37,7 +37,7 @@ class NominalGenerator(Generator):
     """
     A generator for nominal forms.
 
-    :param context: some :class:`~sanskrit.Context`.
+    :param ctx: some :class:`~sanskrit.Context`.
     """
 
     def __init__(self, ctx):

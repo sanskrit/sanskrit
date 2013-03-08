@@ -81,6 +81,7 @@ class Context(object):
         default('NOMINAL_ENDINGS', 'nominal-endings.yml')
         default('NOUN_STEMS', 'noun-stems.csv')
         default('PARTICIPLE_STEMS', 'participle-stems.csv')
+        default('PREFIX_GROUPS', 'prefix-groups.yml')
         default('PREFIXED_ROOTS', 'prefixed-roots.yml')
         default('PRONOUNS', 'pronouns.yml')
         default('ROOTS', 'roots.yml')

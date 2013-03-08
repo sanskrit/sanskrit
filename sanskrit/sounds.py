@@ -61,6 +61,7 @@ def key_fn(s):
 def letter_transform(name, docstring=None):
     data = {
         'shorten': dict(zip('AIUFX', 'aiufx')),
+        'lengthen': dict(zip('aiufx', 'AIUFX')),
         'semivowel': dict(zip('iIuUfFxXeEoO',
                               'y y v v r r l l ay Ay av Av'.split())),
         'aspirate': dict(zip('kgcjwqtdpb',
@@ -75,6 +76,8 @@ def letter_transform(name, docstring=None):
                              'NNNNNYYYYRRRRnnnnmmmm')),
         'dentalize': dict(zip('wWqQRz',
                               'tTdDns')),
+        'retroflex': dict(zip('tTdDns',
+                              'wWqQRz')),
         'simplify': dict(zip('kgGNhjtTdDpPbBnmsrH',
                              'kkkkkwttttppppnmHHH')),
         'guna': dict(zip('i I u U  f  F  x  X'.split(),
@@ -100,14 +103,16 @@ def letter_transform(name, docstring=None):
     func.__doc__ = docstring
     return func
 
-semivowel = letter_transform('semivowel')
 shorten = letter_transform('shorten')
+lengthen = letter_transform('lengthen')
+semivowel = letter_transform('semivowel')
 aspirate = letter_transform('aspirate')
 deaspirate = letter_transform('deaspirate')
 voice = letter_transform('voice')
 devoice = letter_transform('devoice')
 nasalize = letter_transform('nasalize')
 dentalize = letter_transform('dentalize')
+retroflex = letter_transform('retroflex')
 simplify = letter_transform('simplify',
     docstring="""
     Simplify the given letter, if possible.
