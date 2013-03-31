@@ -75,7 +75,8 @@ class Sandhi(object):
                      len(result))
             self.splitter[result] = items
 
-    def _internal_retroflex(self, term):
+    @staticmethod
+    def internal_retroflex(term):
         """Apply the "n -> ṇ" and "s -> ṣ" rules of internal sandhi.
 
         :param term: the term to process
@@ -179,7 +180,7 @@ class Sandhi(object):
                 returned = Exempt(returned)
 
         if internal:
-            return self._internal_retroflex(returned)
+            return Sandhi.internal_retroflex(returned)
         else:
             return returned
 
