@@ -71,7 +71,7 @@ class SimpleQuery(object):
             return {}
 
         print self.session.query(NounStem)\
-                           .filter(NounStem.name == stem_name).all()
+                          .filter(NounStem.name == stem_name).all()
 
         if stem.id in self.irregular_stems:
             gender_id = self.ctx.enum_id['gender'][gender]
@@ -112,14 +112,14 @@ class SimpleQuery(object):
         enum_abbr = self.ctx.enum_abbr
         session = self.session
 
-        root = session.query(Root).filter(Root.name == root_name).first()
-        root_id = root.id
+        roots = session.query(Root).filter(Root.name == root_name)
+        roots_id = [r.id for r in roots]
         mode_id = enum_id['mode'][mode]
         voice_id = enum_id['voice'][voice]
 
         returned = {}
         results = session.query(Verb)\
-                         .filter(Verb.root_id == root_id)\
+                         .filter(Verb.root_id.in_(roots_id))\
                          .filter(Verb.mode_id == mode_id)\
                          .filter(Verb.voice_id == voice_id)
         for verb in results:
