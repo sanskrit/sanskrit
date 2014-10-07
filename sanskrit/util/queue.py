@@ -1,10 +1,11 @@
 import heapq
 
+
 class PriorityQueue(object):
 
     """A priority queue. Lower values are popped first."""
 
-    def  __init__(self):
+    def __init__(self):
         self.heap = []
 
     def __copy__(self):
@@ -27,11 +28,11 @@ class PriorityQueue(object):
         :param item: the item to add
         :param priority: the priority to use
         """
-        pair = (priority,item)
-        heapq.heappush(self.heap,pair)
+        pair = (priority, item)
+        heapq.heappush(self.heap, pair)
 
     def pop(self):
-        """Pop the highest-priority item from the queue."""        
+        """Pop the highest-priority item from the queue."""
         return heapq.heappop(self.heap)[-1]
 
     def pop_with_priority(self):

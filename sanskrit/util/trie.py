@@ -1,9 +1,10 @@
 import collections
 
+
 class HashTrie(object):
 
     """A fast trie, for short items."""
-    
+
     def __init__(self):
         self.mapper = collections.defaultdict(set)
         self.len_longest = 0

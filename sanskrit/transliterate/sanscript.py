@@ -109,6 +109,7 @@ SCHEMES = {}
 
 
 class Scheme(dict):
+
     """Represents all of the data associated with a given scheme. In addition
     to storing whether or not a scheme is roman, :class:`Scheme` partitions
     a scheme's characters into important functional groups.
@@ -126,6 +127,7 @@ class Scheme(dict):
 
 
 class SchemeMap(object):
+
     """Maps one :class:`Scheme` to another. This class grabs the metadata and
     character data required for :func:`transliterate`.
 
@@ -144,7 +146,7 @@ class SchemeMap(object):
         self.from_roman = from_scheme.is_roman
         self.to_roman = to_scheme.is_roman
         self.longest = max(len(x) for g in from_scheme
-                                  for x in from_scheme[g])
+                           for x in from_scheme[g])
 
         for group in from_scheme:
             if group not in to_scheme:
@@ -205,7 +207,7 @@ def _roman(data, scheme_map, **kw):
         #
         # If we've finished reading through `data`, then `token` will be empty
         # and the loop below will be skipped.
-        token = data[i:i+longest]
+        token = data[i:i + longest]
 
         while token:
             if token in togglers:
@@ -331,7 +333,7 @@ def transliterate(data, _from=None, _to=None, scheme_map=None, **kw):
         'togglers': set(['##']),
         'suspend_on': set('<'),
         'suspend_off': set('>')
-        }
+    }
     options.update(kw)
 
     func = _roman if scheme_map.from_roman else _brahmic

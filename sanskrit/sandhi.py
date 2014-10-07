@@ -113,7 +113,7 @@ class Sandhi(object):
             if had_n and L == 'n':
                 letters[i] = 'R'
                 had_n = False
-            elif apply_n and L == 'n' and letters[i+1] in n_after:
+            elif apply_n and L == 'n' and letters[i + 1] in n_after:
                 letters[i] = 'R'
                 had_n = True
             if L in n_trigger:

@@ -189,4 +189,4 @@ class SimpleQuery(object):
             'root_id': root_id,
             'verbs': verbs,
             'participles': participles,
-            }
+        }

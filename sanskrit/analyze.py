@@ -54,7 +54,7 @@ class SimpleAnalyzer(object):
                 'number_id': e.number_id,
                 'compounded': e.compounded,
                 'is_consonant_stem': is_cons,
-                }
+            }
             self.nominal_endings[e.name[::-1]] = Ending(**data)
 
         self.session.remove()
@@ -138,7 +138,7 @@ class SimpleAnalyzer(object):
                     'case_id': e.case_id,
                     'number_id': e.number_id,
                     'compounded': e.compounded,
-                    }
+                }
                 returned.append(Nominal(**datum))
 
         return returned

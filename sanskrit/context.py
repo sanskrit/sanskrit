@@ -109,7 +109,8 @@ class Context(object):
     def create_all(self):
         """Create tables for every model in `sanskrit.schema`."""
         metadata = Base.metadata
-        extant = {t.name for t in metadata.tables.values() if t.exists(self.engine)}
+        extant = {
+            t.name for t in metadata.tables.values() if t.exists(self.engine)}
         metadata.create_all(self.engine)
         for name in metadata.sorted_tables:
             if name not in extant:

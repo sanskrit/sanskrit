@@ -178,7 +178,7 @@ def add_verb_endings(ctx):
                     'number_id': number[row['number']],
                     'mode_id': mode_id,
                     'voice_id': voice_id,
-                    }
+                }
                 ending = VerbEnding(**kw)
                 session.add(ending)
                 session.flush()
@@ -323,7 +323,7 @@ def add_verbal_indeclinables(ctx, root_map=None):
     items = [
         ('GERUNDS', Gerund),
         ('INFINITIVES', Infinitive),
-        ]
+    ]
 
     for file_key, cls in items:
         for row in util.read_csv(ctx.config[file_key]):
@@ -339,7 +339,7 @@ def add_verbal_indeclinables(ctx, root_map=None):
             datum = {
                 'name': row['name'],
                 'root_id': root_id
-                }
+            }
             session.add(cls(**datum))
     session.commit()
 
@@ -369,7 +369,7 @@ def add_participle_stems(ctx, root_map=None):
             'root_id': root_id,
             'mode_id': mode[row['mode']],
             'voice_id': voice[row['voice']]
-            }
+        }
 
         session.add(ParticipleStem(**data))
 
@@ -459,7 +459,7 @@ def add_nominal_endings(ctx):
                     'case_id': case.get(row.get('case')),
                     'number_id': number.get(row.get('number')),
                     'compounded': row.get('compounded', False)
-                    }
+                }
                 ending = NominalEnding(**kw)
                 session.add(ending)
                 session.flush()
@@ -486,7 +486,7 @@ def add_noun_stems(ctx):
             'name': name,
             'pos_id': pos_id,
             'genders_id': genders_id,
-            })
+        })
 
         i += 1
         if i % 500 == 0:
@@ -551,7 +551,7 @@ def add_adjective_stems(ctx):
         buf.append({
             'name': name,
             'pos_id': pos_id,
-            })
+        })
 
         i += 1
         if i % 500 == 0:
@@ -646,7 +646,7 @@ def run(ctx):
         ('Indeclinables', add_indeclinables),
         ('Verbal data', add_verbal),
         ('Nominal data', add_nominals),
-        ]
+    ]
 
     for name, f in functions:
         util.heading(name, '~')

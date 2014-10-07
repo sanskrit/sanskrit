@@ -114,7 +114,7 @@ nasalize = letter_transform('nasalize')
 dentalize = letter_transform('dentalize')
 retroflex = letter_transform('retroflex')
 simplify = letter_transform('simplify',
-    docstring="""
+                            docstring="""
     Simplify the given letter, if possible.
 
     Here, to "simplify" a letter is to reduce it to a sound that is permitted
@@ -125,22 +125,22 @@ simplify = letter_transform('simplify',
 
     :param letter: the letter to simplify
     """
-)
+                            )
 guna = letter_transform('guna',
-    docstring="""
+                        docstring="""
     Apply guna to the given letter, if possible.
     """
-)
+                        )
 vrddhi = letter_transform('vrddhi',
-    docstring="""
+                          docstring="""
     Apply vrddhi to the given letter, if possible.
     """
-)
+                          )
 samprasarana = letter_transform('samprasarana',
-    docstring="""
+                                docstring="""
     Apply samprasarana to the given letter, if possible.
     """
-)
+                                )
 
 del letter_transform
 
@@ -149,6 +149,7 @@ del letter_transform
 # --------------------
 
 class Term(str):
+
     def simplify(self):
         """Simplify the given string using consonant reduction."""
         return self[:-1] + simplify(self[-1])
