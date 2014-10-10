@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-sanskrit.schema
-~~~~~~~~~~~~~~~
+    sanskrit.schema
+    ~~~~~~~~~~~~~~~
 
-Schema for Sanskrit data.
+    Schema for Sanskrit data.
 """
 
 import re
@@ -15,20 +15,15 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
 
 
-# Setup
-# ==========
-
-# Base classes
-# ------------
-# Set up some sensible defaults
-
-Base = declarative_base()
-
-
 class SimpleBase(Base):
 
-    """A simple default base class. This automatically creates a table name,
-    a primary key, and a `name` field for some payload.
+    """A simple default base class.
+
+    This automatically creates:
+
+    - __tablename__
+    - id (primary key)
+    - name (string)
     """
 
     __abstract__ = True
@@ -116,16 +111,12 @@ class Voice(EnumBase):
 
 class Gender(EnumBase):
 
-    """Grammatical gender. This class is overloaded to handle both
-    regular gender, which is used for inflected nominals:
+    """Grammatical gender:
 
     - masculine, corresponding to Panini's **puṃliṅga**
     - feminine, corresponding to Panini's **strīliṅga**
     - neuter, corresponding to Panini's **napuṃsakaliṅga**
     - unknown/undefined
-
-    and composite gender, which is used for stems:
-
     """
 
 
@@ -238,9 +229,7 @@ class Tag(SimpleBase):
 
 class Prefix(SimpleBase):
 
-    """A generic prefix. This is a superclass of :class:`VerbPrefix` and
-    :class:`NounPrefix`.
-    """
+    """A generic prefix."""
 
     pos_id = Column(ForeignKey(Tag.id))
 
@@ -268,7 +257,7 @@ class NounPrefix(Prefix):
 
 class NominalEnding(SimpleBase):
 
-    """A suffix for regular nouns and adjectives This corresponds to
+    """A suffix for regular nouns and adjectives. This corresponds to
     Panini's **sup**."""
 
     CONSONANT_STEM_TYPE = '$cons'
@@ -445,8 +434,7 @@ class ParticipleStem(Stem):
 
 class StemIrregularity(Base):
 
-    """
-    Record of an irregular stem.
+    """Record of an irregular stem.
 
     Some Sanskrit stems are inflected irregularly. Since only an
     exceedingly small number of stems is irregular (< 100), it's
