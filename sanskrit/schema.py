@@ -370,7 +370,7 @@ class Stem(SimpleBase):
 
     """A nominal stem. This corresponds to Panini's **aṅga**:
 
-        1.4.13 Anything to which a suffix can be added is called an `aṅga`.
+        | 1.4.13 Anything to which a suffix can be added is called an `aṅga`.
 
     But although "aṅga" also includes "dhātu," :class:`Stem` does
     not. Verb roots are stored in :class:`Root`.
@@ -462,7 +462,7 @@ class Form(SimpleBase):
 
     """A complete form. This corresponds to Panini's **pada**:
 
-        1.4.14 Terms ending in "sup" and "tiṅ" are called `pada`.
+        | 1.4.14 Terms ending in "sup" and "tiṅ" are called `pada`.
 
     In other words, a :class:`Form` is a self-contained linguistic unit that
     could be used in a sentence as-is.
@@ -578,7 +578,7 @@ class Pronoun(Nominal):
 
     """A complete form. This partially corresponds to Panini's **sarvanāman**:
 
-        1.1.26 "sarva" etc. are called `sarvanāman`.
+        | 1.1.26 "sarva" etc. are called `sarvanāman`.
 
     However, adjectival words like "sarva" and "eka" are stored as adjectives.
     """
