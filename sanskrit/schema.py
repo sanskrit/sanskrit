@@ -15,6 +15,9 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import relationship
 
 
+Base = declarative_base()
+
+
 class SimpleBase(Base):
 
     """A simple default base class.
