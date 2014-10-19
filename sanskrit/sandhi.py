@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-sanskrit.sandhi
-~~~~~~~~~~~~~~~
+    sanskrit.sandhi
+    ~~~~~~~~~~~~~~~
 
-Sandhi operations.
+    Sandhi operations.
 
-:license: MIT and BSD
+    :license: MIT and BSD
 """
 
 from . import sounds
@@ -89,6 +89,8 @@ class Sandhi(object):
         n_between = sounds.VOWELS.union('kKgGNpPbBmhvyM')
         # Must appear after the retroflexed "n"
         n_after = sounds.VOWELS.union('myvn')
+        # Defines t retroflexion
+        retroflexion_dict = dict(zip('tT', 'wW'))
 
         letters = list(term)
 
@@ -100,8 +102,7 @@ class Sandhi(object):
             # "t" retroflexion after "s" retroflexion
             if had_s:
                 had_s = False
-                retro_dict = dict(zip('tT', 'wW'))
-                letters[i] = retro_dict.get(L, L)
+                letters[i] = retroflexion_dict.get(L, L)
 
             # "s" retroflexion
             if apply_s and L == 's':
