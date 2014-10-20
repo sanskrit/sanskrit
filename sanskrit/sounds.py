@@ -103,6 +103,7 @@ def letter_transform(name, docstring=None):
     func.__doc__ = docstring
     return func
 
+
 shorten = letter_transform('shorten')
 lengthen = letter_transform('lengthen')
 semivowel = letter_transform('semivowel')
@@ -126,16 +127,22 @@ simplify = letter_transform('simplify',
     :param letter: the letter to simplify
     """
                             )
+
+
 guna = letter_transform('guna',
                         docstring="""
     Apply guna to the given letter, if possible.
     """
                         )
+
+
 vrddhi = letter_transform('vrddhi',
                           docstring="""
     Apply vrddhi to the given letter, if possible.
     """
                           )
+
+
 samprasarana = letter_transform('samprasarana',
                                 docstring="""
     Apply samprasarana to the given letter, if possible.

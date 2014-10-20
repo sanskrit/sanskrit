@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-test.sounds
-~~~~~~~~~~~
+    test.sounds
+    ~~~~~~~~~~~
 
-Tests various functions for Sanskrit sounds.
+    Tests various functions for Sanskrit sounds.
 
-:license: MIT and BSD
+    :license: MIT and BSD
 """
 
 from sanskrit import sounds
