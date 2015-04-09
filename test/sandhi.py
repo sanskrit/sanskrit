@@ -1,78 +1,94 @@
 # -*- coding: utf-8 -*-
 """
-test.sandhi
-~~~~~~~~~~~
+    test.sandhi
+    ~~~~~~~~~~~
 
-Tests joining and splitting words with sandhi rules.
+    Tests joining and splitting words with sandhi rules.
 
-:license: MIT and BSD
+    :license: MIT
 """
 
+import pytest
+
 from sanskrit import Context
-from sanskrit import setup as S  # ``as S`` avoids problems with nose
-from sanskrit import sandhi
-
-from . import TestCase, config as cfg
+from sanskrit.sandhi import Splitter, Joiner
 
 
-class SandhiTestCase(TestCase):
+@pytest.fixture
+def simple_joiner():
+    """A simple joiner."""
+    return Joiner([
+        ('a', 'i', 'e'),
+        ('a', 'a', 'A'),
+        ('a', 'A', 'A'),
+        ('i', 'a', 'y a'),
+        ('I', 'a', 'y a'),
+        ('O', 'a', 'Av a'),
+    ])
 
-    """Tests basic sandhi operations."""
 
-    def setUp(self):
-        """Load all sandhi rules into the database."""
-        s = str.split
-        self.two_split = [
-            (s('kim akurvata'), 'kim akurvata'),
-            (s('tat hita'), 'tad Dita'),
-            (s('kanyA fcCati'), 'kanyarcCati'),
-            (s('PalAni alaBat'), 'PalAny alaBat'),
-            (s('yogin arjuna'), 'yoginn arjuna'),
-            (s('narEs agacCat'), 'narEr agacCat'),
-            ]
-        self.three_split = [
-            (s('pARqavAS ca eva'), 'pARqavAS cEva'),
-            (['tasmin', 'Pale', 'iti'], 'tasmin Pala iti'),
-            (['te', sandhi.Exempt('Pale'), 'iti'], 'te Pale iti'),
-            ]
+@pytest.fixture
+def simple_splitter():
+    """A simple splitter."""
+    # "splits" blows up quickly, so the rule list is deliberately left small.
+    return Splitter([
+        ('a', 'a', 'A'),
+        ('a', 'A', 'A'),
+        ('O', 'a', 'Av a'),
+    ])
 
-        ctx = Context(cfg)
-        ctx.create_all()
-        S.add_enums(ctx)
-        S.add_sandhi(ctx)
 
-        self.sandhi = sandhi.Sandhi()
-        self.sandhi.load(ctx)
+class TestJoiner:
+    EXTERNAL_JOINER_TESTS = [
+        # Basic
+        (('tasya', 'icCA'), 'tasyecCA'),
+        (('tasya', 'aSvaH'), 'tasyASvaH'),
+        (('tasya', 'Amoda'), 'tasyAmoda'),
+        (('PalAni', 'apaSyat'), 'PalAny apaSyat'),
+        (('kumArI', 'apaSyat'), 'kumAry apaSyat'),
+        (('narO', 'apaSyat'), 'narAv apaSyat'),
+        # Three terms
+        (('tasya', 'aSvena', 'iti'), 'tasyASveneti'),
+        # No change
+        (('tam', 'eva'), 'tam eva'),
+    ]
 
-    def test_join(self):
-        """Test joining chunks together."""
-        for chunks, joined in self.two_split + self.three_split:
-            self.assertEqual(self.sandhi.join(*chunks), joined)
+    INTERNAL_JOINER_TESTS = [
+        (('nara', 'ina'), 'nareRa'),
+    ]
 
-    def test_splits(self):
-        """Test splitting chunks apart."""
-        for chunks, joined in self.two_split:
-            splits = list(self.sandhi.splits(joined.replace(' ', '')))
-            self.assertIn(tuple(chunks), splits)
+    RETROFLEXION_TESTS = [
+        ('narena', 'nareRa'),
+        ('vAksu', 'vAkzu'),
+        ('nisanna', 'nizaRRa'),
+        ('agnInAm', 'agnInAm'),
+        ('havisA', 'havizA'),
+        ('rAmAyana', 'rAmAyaRa'),
+    ]
 
-    def test_internal_retroflex(self):
-        data = [
-            ('narena', 'nareRa'),
-            ('vAksu', 'vAkzu'),
-            ('nisanna', 'nizaRRa'),
-            ('agnInAm', 'agnInAm'),
-            ('havisA', 'havizA'),
-            ('rAmAyana', 'rAmAyaRa'),
-            ]
-        for raw, actual in data:
-            self.assertEqual(self.sandhi.join(raw, internal=True), actual)
+    @pytest.mark.parametrize('terms,result', EXTERNAL_JOINER_TESTS)
+    def test_join_external(self, simple_joiner, terms, result):
+        assert simple_joiner.join(terms) == result
 
-    def test_internal_join(self):
-        data = [
-            ('dveS', 'ti', 'dvezwi'),
-            ('dviS', 'Ta', 'dvizWa'),
-            ('draS', 'sya', 'drakzya'),
-            ]
-        for before, after, actual in data:
-            expected = self.sandhi.join(before, after, internal=True)
-            self.assertEqual(expected, actual)
+    @pytest.mark.parametrize('terms,result', INTERNAL_JOINER_TESTS)
+    def test_join_internal(self, simple_joiner, terms, result):
+        assert simple_joiner.join(terms, internal=True) == result
+
+    @pytest.mark.parametrize('before,after', RETROFLEXION_TESTS)
+    def test_internal_retroflexion(self, before, after):
+        assert Joiner.internal_retroflex(before) == after
+
+
+class TestSpliter:
+    # "splits" blows up quickly, so these tokens are artificially small:
+    SPLITTER_TESTS = [
+        ('yAH', ['ya,aH', 'ya,AH'] +
+            ['y,AH', 'yA,H', 'yAH,']),
+        ('rAva', ['ra,ava', 'ra,Ava', 'rO,a'] +
+            ['r,Ava', 'rA,va', 'rAv,a', 'rAva,'])
+    ]
+
+    @pytest.mark.parametrize('before,expected', SPLITTER_TESTS)
+    def test_iter_splits(self, simple_splitter, before, expected):
+        actual = set(','.join(x) for x in simple_splitter.iter_splits(before))
+        assert actual == set(expected)

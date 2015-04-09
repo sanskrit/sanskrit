@@ -26,36 +26,35 @@ class Exempt(unicode):
     """
 
 
-class Sandhi(object):
+class SandhiObject(object):
 
-    """Handles the phonetic rules that apply when Sanskrit words come together
-    or split apart. The two main methods here are :meth:`splits` and
-    :meth:`join`.
-    """
-
-    def __init__(self, rules=None):
-        """"""
-        self.splitter = HashTrie()
-        self.joiner = {}
-        if rules:
-            self.add_rules(rules)
-
-    def load(self, ctx):
-        """Add rules from the database.
+    @classmethod
+    def from_database(cls, ctx):
+        """Create a Sandhi object using rules from the database.
 
         :param ctx: the current :class:`~sanskrit.context.Context`.
         """
-        self.add_rules(*self._query(ctx))
-
-    def _query(self, ctx):
-        """Query for :class:`SandhiRule`s and yield each as a
-        :class:`dict`."""
+        rules = []
         for rule in ctx.session.query(SandhiRule):
-            yield (rule.first, rule.second, rule.result)
+            rules.append((rule.first, rule.second, rule.result))
+        return cls(rules=rules)
 
-    def add_rules(self, *rules):
-        """Add rules for splitting and joining words. Rules should be ordered
-        collections that contain:
+    def add_rules(self, rules):
+        raise NotImplementedError
+
+
+class Joiner(SandhiObject):
+
+    """Joins multiple Sanskrit terms by applying sandhi rules."""
+
+    def __init__(self, rules=None):
+        """"""
+        self.data = {}
+        if rules:
+            self.add_rules(rules)
+
+    def add_rules(self, rules):
+        """Add rules for joining words. Rules are 3-tuples that contain:
 
         - the first part of the combination
         - the second part of the combination
@@ -68,12 +67,7 @@ class Sandhi(object):
         :param rules: a list of rules
         """
         for first, second, result in rules:
-            self.joiner[(first, second)] = result
-
-            result = result.replace(' ', '')
-            items = (first, second, result, len(first), len(second),
-                     len(result))
-            self.splitter[result] = items
+            self.data[(first, second)] = result
 
     @staticmethod
     def internal_retroflex(term):
@@ -124,7 +118,7 @@ class Sandhi(object):
 
         return ''.join(letters)
 
-    def join(self, *chunks, **kw):
+    def join(self, chunks, internal=False):
         """Join the given chunks according to the object's rules::
 
             assert 'tasyecCA' == s.join('tasya', 'icCA')
@@ -148,13 +142,6 @@ class Sandhi(object):
                         default, this is a single space ``' '``. For internal
                         sandhi, this should be set to ``''``.
         """
-        internal = kw.pop('internal', False)
-
-        if kw:
-            key = kw.keys()[0]
-            msg = "'join() got an unexpected keyword argument '%s'" % key
-            raise TypeError(msg)
-
         separator = '' if internal else ' '
 
         it = iter(chunks)
@@ -173,7 +160,7 @@ class Sandhi(object):
                         returned += separator + chunk
                         break
                     key = (returned[-i:], chunk[0])
-                    result = self.joiner.get(key, None)
+                    result = self.data.get(key, None)
                     if result:
                         returned = returned[:-i] + result + chunk[1:]
                         break
@@ -181,11 +168,28 @@ class Sandhi(object):
                 returned = Exempt(returned)
 
         if internal:
-            return Sandhi.internal_retroflex(returned)
+            return Joiner.internal_retroflex(returned)
         else:
             return returned
 
-    def splits(self, chunk):
+class Splitter(object):
+
+    """Splits Sanskrit terms by undoing sandhi rules."""
+
+    def __init__(self, rules=None):
+        """"""
+        self.data = HashTrie()
+        if rules:
+            self.add_rules(rules)
+
+    def add_rules(self, rules):
+        for first, second, result in rules:
+            result = result.replace(' ', '')
+            items = (first, second, result, len(first), len(second),
+                     len(result))
+            self.data[result] = items
+
+    def iter_splits(self, chunk):
         """Return a generator for all splits in `chunk`. Results are yielded
         as 2-tuples containing the term before the split and the term after::
 
@@ -204,7 +208,6 @@ class Sandhi(object):
         loosely ordered but nondeterministic.
         """
 
-        splitter = self.splitter
         chunk_len = len(chunk)
 
         for i in xrange(chunk_len):
@@ -215,7 +218,7 @@ class Sandhi(object):
                 yield (chunk1, chunk2)
 
             # Rule-based splits: undo a sandhi change
-            rules = splitter[chunk2]
+            rules = self.data[chunk2]
             for first, second, result, _, _, len_result in rules:
                 before = chunk1 + first
                 after = second + chunk2[len_result:]
@@ -223,14 +226,3 @@ class Sandhi(object):
 
         # Non-split: yield the chunk as-is.
         yield (chunk, '')
-
-    def split_off(self, chunk, fragment):
-        """Remove `fragment` from the end of `chunk` and yield the results.
-        If `fragment` cannot be found, yield nothing.
-
-        :param chunk: the phrase to split
-        :param fragment: the phrase to split off
-        """
-        for before, after in self.splits(chunk):
-            if after == fragment:
-                yield before
