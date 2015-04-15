@@ -9,7 +9,6 @@
 """
 
 from . import sounds
-from .schema import SandhiRule
 from .util import HashTrie
 
 
@@ -27,17 +26,6 @@ class Exempt(unicode):
 
 
 class SandhiObject(object):
-
-    @classmethod
-    def from_database(cls, ctx):
-        """Create a Sandhi object using rules from the database.
-
-        :param ctx: the current :class:`~sanskrit.context.Context`.
-        """
-        rules = []
-        for rule in ctx.session.query(SandhiRule):
-            rules.append((rule.first, rule.second, rule.result))
-        return cls(rules=rules)
 
     def add_rules(self, rules):
         raise NotImplementedError
