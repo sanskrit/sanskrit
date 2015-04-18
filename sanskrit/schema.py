@@ -36,7 +36,7 @@ class SimpleBase(Base):
         return re.sub('(?<!^)(?=[A-Z])', '_', cls.__name__).lower()
 
     id = Column(Integer, primary_key=True)
-    name = Column(String)
+    name = Column(String, index=True)
 
     def __repr__(self):
         cls = self.__class__.__name__

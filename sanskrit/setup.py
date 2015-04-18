@@ -10,6 +10,8 @@ import sys
 from sanskrit import util
 from sanskrit.schema import *
 
+import sqlalchemy.schema
+
 # Populated in `add_enums`
 ENUM = {}
 

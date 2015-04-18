@@ -81,10 +81,8 @@ class SimpleAnalyzer(Analyzer):
         :param word: the word to analyze. This should be a completeh
                      word, or what Panini would call a *pada*.
         """
-        returned = []
-        returned.extend(self.analyze_word(word))
+        returned = self.analyze_word(word)
         returned.extend(self.analyze_nominal(word))
-        returned.extend(self.analyze_verb(word))
         return returned
 
     def analyze_word(self, word):
@@ -156,13 +154,4 @@ class SimpleAnalyzer(Analyzer):
                 }
                 returned.append(Nominal(**datum))
 
-        return returned
-
-    def analyze_verb(self, word):
-        """
-        Analyze a verb
-
-        :param word: the word to analyze
-        """
-        returned = []
         return returned
