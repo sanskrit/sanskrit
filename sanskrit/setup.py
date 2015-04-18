@@ -164,9 +164,10 @@ def add_verb_endings(ctx):
     session.close()
 
 
-def add_roots(ctx):
-    """Add verb roots to the database."""
+def add_roots(ctx, prefix_map):
+    """Populates :class:`Root` and its subclasses."""
 
+    # TODO: modified roots
     session = ctx.session
     vclass = ENUM['vclass']
     voice = ENUM['voice']
@@ -198,58 +199,31 @@ def add_roots(ctx):
         session.add(paradigm)
 
     session.commit()
-    session.close()
-    return root_map
 
-
-def add_prefixed_roots(ctx, root_map, prefix_map=None):
-    """Add prefixed roots to the database.
-
-    TODO: major work needed
-    """
-
-    session = ctx.session
-    homs = [None] + [str(i) for i in range(1, 10)]
-
-    # Contains roots that weren't added by `add_roots`.
-    missed = set()
-
+    # Prefixed roots
     for i, row in enumerate(util.read_csv(ctx.config['PREFIXED_ROOTS'])):
         name = row['prefixed_root']
         basis = row['unprefixed_root']
         hom = row['hom']
         prefixes = row['prefixes'].split('-')
 
-        basis_id = None
-        try:
-            basis_id = root_map[(basis, hom)]
-        except KeyError:
-            for hom in homs:
-                try:
-                    basis_id = root_map[(basis, hom)]
-                except KeyError:
-                    pass
-
-        if basis_id is None:
-            candidates = [k for k in root_map.keys() if k[0] == basis]
-            print 'SKIPPED:', name, basis, candidates
-            missed.add(basis)
-            continue
-
-        prefixed_root = PrefixedRoot(name=name, basis_id=basis_id)
-        session.add(prefixed_root)
-        session.flush()
-
+        assert (basis, hom) in root_map
+        basis_id = root_map[(basis, hom)]
         for prefix in prefixes:
             # TODO
             pass
 
-        if i % 100 == 0:
-            util.tick(name)
+        prefixed_root = PrefixedRoot(name=name, basis_id=basis_id)
+        session.add(prefixed_root)
+        session.flush()
+        root_map[(name, hom)] = prefixed_root.id
+
+        tick(name)
 
     session.commit()
     session.close()
-    print missed
+
+    return root_map
 
 
 def add_verbs(ctx, root_map):
@@ -547,14 +521,13 @@ def run(ctx):
     add_indeclinables(ctx)
 
     util.heading('Verbal data')
-    prefixes = add_verb_prefixes(ctx)
-    roots = add_roots(ctx)
+    prefix_map = add_verb_prefixes(ctx)
+    root_map = add_roots(ctx, prefix_map=prefix_map)
     add_verb_endings(ctx)
-    add_verbs(ctx, roots)
-    add_participle_stems(ctx, roots)
-    add_verbal_indeclinables(ctx, roots)
-    add_prefixed_roots(ctx, root_map=roots, prefix_map=prefixes)
-    del prefixes, roots
+    add_verbs(ctx, root_map)
+    add_participle_stems(ctx, root_map)
+    add_verbal_indeclinables(ctx, root_map)
+    del prefix_map
 
     util.heading('Nominal data')
     add_nominal_stems(ctx)
