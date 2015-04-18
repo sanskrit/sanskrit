@@ -11,4 +11,6 @@ Sample config for running tests on the package.
 import os
 
 DATABASE_URI = 'sqlite:///:memory:'
-DATA_PATH = os.path.expanduser('~/sanskrit/data')
+
+test_dir = os.path.dirname(__file__)
+DATA_PATH = os.path.join(test_dir, 'data')

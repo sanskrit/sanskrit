@@ -1,0 +1,67 @@
+enum_type,human_readable_value,abbreviation
+case,case 1,1
+case,case 2,2
+case,case 3,3
+case,case 4,4
+case,case 5,5
+case,case 6,6
+case,case 7,7
+case,case 8,8
+case,unknown,?
+class,class 1,1
+class,class 2,2
+class,class 3,3
+class,class 4,4
+class,class 5,5
+class,class 6,6
+class,class 7,7
+class,class 8,8
+class,class 9,9
+class,class 10,10
+class,unknown,?
+class,nominal,nom
+gender,masculine,m
+gender,feminine,f
+gender,neuter,n
+gender,ungendered,none
+gender_group,masculine,m
+gender_group,feminine,f
+gender_group,neuter,n
+gender_group,masculine and feminine,mf
+gender_group,masculine and neuter,mn
+gender_group,feminine and neuter,fn
+gender_group,any gender,mfn
+gender_group,ungendered,none
+mode,present,pres
+mode,aorist,aor
+mode,imperfect,ipft
+mode,perfect,perf
+mode,simple future,sfut
+mode,periphrastic future,pfut
+mode,conditional,cond
+mode,optative,opt
+mode,imperative,impv
+mode,benedictive,ben
+mode,injunctive,inj
+mode,future optative,f-opt
+mode,future imperative,f-impv
+mode,future (for participles),fut
+mode,past (for participles),past
+modification,causative,caus
+modification,desiderative,desid
+modification,intensive,intens
+number,singular,s
+number,dual,d
+number,plural,p
+number,unknown,?
+person,first,1
+person,second,2
+person,third,3
+sandhi_rule_type,common,common
+sandhi_rule_type,internal,internal
+sandhi_rule_type,external,external
+voice,parasmaipada,para
+voice,atmanepada,atma
+voice,ubhayapada,ubhaya
+voice,active,active
+voice,passive,pass

@@ -34,3 +34,12 @@ def tick(s):
     long-running function.
     """
     print ' -', s
+
+
+def tick_every(n):
+    def func(x):
+        func.i += 1
+        if func.i % n == 0:
+            print func.i, ':', x
+    func.i = 0
+    return func

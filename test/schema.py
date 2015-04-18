@@ -9,7 +9,7 @@ Tests linguistic schema on various data.
 """
 
 from sanskrit import Context
-from sanskrit import setup as S  # ``as S`` avoids problems with nose
+from sanskrit import setup
 from sanskrit.schema import *
 
 from . import TestCase, config as cfg
@@ -26,8 +26,8 @@ class SchemaTestCase(TestCase):
         self.ctx = Context(cfg)
         self.ctx.create_all()
         self.session = self.ctx.session
-        S.add_enums(self.ctx)
-        self.enum = S.ENUM
+        setup.add_enums(self.ctx)
+        self.enum = setup.ENUM
 
     def add_root(self, name):
         """Add a root with the given name.
@@ -46,22 +46,21 @@ class EnumTestCase(SchemaTestCase):
 
     def test_enum_names(self):
         """Test enum values."""
-        def q(obj):
-            return self.session.query(obj).all()
+        def q(cls, id):
+            return self.session.query(cls).filter(cls.id == id).one()
 
-        print [x.__dict__ for x in q(Voice)]
         enum = self.enum
-        third = next(x for x in q(Person) if x.id == enum['person']['3'])
-        dual = next(x for x in q(Number) if x.id == enum['number']['d'])
-        parasmaipada = next(x for x in q(Voice) if x.id == enum['voice']['P'])
-        masculine = next(x for x in q(Gender) if x.id == enum['gender']['m'])
-        dative = next(x for x in q(Case) if x.id == enum['case']['4'])
+        third = q(Person, enum['person']['3'])
+        dual = q(Number, enum['number']['d'])
+        parasmaipada = q(Voice, enum['voice']['para'])
+        masculine = q(Gender, enum['gender']['m'])
+        dative = q(Case, enum['case']['4'])
 
-        self.assertEqual(third.abbr, '3')
-        self.assertEqual(dual.abbr, 'd')
-        self.assertEqual(parasmaipada.abbr, 'P')
-        self.assertEqual(masculine.abbr, 'm')
-        self.assertEqual(dative.abbr, '4')
+        assert third.abbr == '3'
+        assert dual.abbr == 'd'
+        assert parasmaipada.abbr == 'para'
+        assert masculine.abbr == 'm'
+        assert dative.abbr == '4'
 
 
 class FormTestCase(SchemaTestCase):
@@ -74,13 +73,13 @@ class FormTestCase(SchemaTestCase):
         enum = self.enum
 
         p, n, m, v = (enum['person']['3'], enum['number']['s'],
-                      enum['mode']['pres'], enum['voice']['P'])
+                      enum['mode']['pres'], enum['voice']['para'])
 
         root = self.add_root('kf')
         p1 = Paradigm(root_id=root.id, vclass_id=enum['vclass']['5'],
-                      voice_id=enum['voice']['U'])
+                      voice_id=enum['voice']['ubhaya'])
         p2 = Paradigm(root_id=root.id, vclass_id=enum['vclass']['8'],
-                      voice_id=enum['voice']['U'])
+                      voice_id=enum['voice']['ubhaya'])
         session.add_all([p1, p2])
         session.flush()
 
@@ -89,29 +88,29 @@ class FormTestCase(SchemaTestCase):
         session.add(verb)
         session.commit()
 
-        self.assertTrue(root.id is not None)
-        self.assertTrue(p1.id is not None)
-        self.assertTrue(p2.id is not None)
-        self.assertTrue(verb.id is not None)
+        assert root.id is not None
+        assert p1.id is not None
+        assert p2.id is not None
+        assert verb.id is not None
         session.close()
 
         # Root
         root = session.query(Root).first()
         vclasses = [x.id for x in root.vclasses]
-        self.assertEqual(root.name, 'kf')
-        self.assertEqual(vclasses, [enum['vclass']['5'], enum['vclass']['8']])
+        assert root.name == 'kf'
+        assert vclasses == [enum['vclass']['5'], enum['vclass']['8']]
 
         # Verb
         verb = session.query(Verb).first()
-        self.assertEqual(verb.name, 'karoti')
-        self.assertEqual(verb.person_id, p)
-        self.assertEqual(verb.number_id, n)
-        self.assertEqual(verb.mode_id, m)
-        self.assertEqual(verb.voice_id, v)
+        assert verb.name == 'karoti'
+        assert verb.person_id == p
+        assert verb.number_id == n
+        assert verb.mode_id == m
+        assert verb.voice_id == v
 
         # Root-verb associations
-        self.assertEqual(root.id, verb.root_id)
-        self.assertEqual(verb.root.name, 'kf')
+        assert root.id == verb.root_id
+        assert verb.root.name == 'kf'
 
     def test_noun(self):
         """Test nouns."""
@@ -127,25 +126,25 @@ class FormTestCase(SchemaTestCase):
         session.add(noun)
         session.commit()
 
-        self.assertTrue(stem.id is not None)
-        self.assertTrue(noun.id is not None)
+        assert stem.id is not None
+        assert noun.id is not None
         session.close()
 
         # Stem
         stem = session.query(Stem).first()
-        self.assertEqual(stem.pos_id, Tag.NOUN)
-        self.assertEqual(stem.name, 'nara')
+        assert stem.pos_id == Tag.NOUN
+        assert stem.name == 'nara'
 
         # Noun
         noun = session.query(Noun).first()
-        self.assertEqual(noun.pos_id, Tag.NOUN)
-        self.assertEqual(noun.name, 'narasya')
-        self.assertEqual(noun.gender_id, enum['gender']['m'])
-        self.assertEqual(noun.case_id, enum['case']['6'])
-        self.assertEqual(noun.number_id, enum['number']['s'])
+        assert noun.pos_id == Tag.NOUN
+        assert noun.name == 'narasya'
+        assert noun.gender_id == enum['gender']['m']
+        assert noun.case_id == enum['case']['6']
+        assert noun.number_id == enum['number']['s']
 
         # Stem-noun associtaions
-        self.assertEqual(stem.id, noun.stem_id)
+        assert stem.id == noun.stem_id
 
     def test_indeclinable(self):
         """Test indeclinables."""
@@ -157,9 +156,9 @@ class FormTestCase(SchemaTestCase):
         session.close()
 
         ind = session.query(Indeclinable).first()
-        self.assertTrue(ind.id is not None)
-        self.assertEqual(ind.pos_id, Tag.INDECLINABLE)
-        self.assertEqual(ind.name, 'ca')
+        assert ind.id is not None
+        assert ind.pos_id == Tag.INDECLINABLE
+        assert ind.name == 'ca'
 
     def test_infinitive(self):
         """Test infinitives."""
@@ -172,10 +171,10 @@ class FormTestCase(SchemaTestCase):
         session.close()
 
         inf = session.query(Infinitive).first()
-        self.assertTrue(inf.id is not None)
-        self.assertEqual(inf.pos_id, Tag.INFINITIVE)
-        self.assertEqual(inf.name, 'gantum')
-        self.assertEqual(inf.root.name, 'gam')
+        assert inf.id is not None
+        assert inf.pos_id == Tag.INFINITIVE
+        assert inf.name == 'gantum'
+        assert inf.root.name == 'gam'
 
     def test_participle(self):
         """Test participles."""
@@ -187,7 +186,7 @@ class FormTestCase(SchemaTestCase):
         root = self.add_root('car')
         part_stem = ParticipleStem(name='carat', root_id=root.id,
                                    mode_id=enum['mode']['pres'],
-                                   voice_id=enum['voice']['P'])
+                                   voice_id=enum['voice']['para'])
         session.add(part_stem)
         session.flush()
 
@@ -198,13 +197,13 @@ class FormTestCase(SchemaTestCase):
         session.close()
 
         part = session.query(Participle).first()
-        self.assertTrue(part.id is not None)
-        self.assertEqual(part.name, 'carantam')
-        self.assertEqual(part.root.name, 'car')
-        self.assertEqual(part.stem.name, 'carat')
-        self.assertEqual(part.gender_id, g)
-        self.assertEqual(part.case_id, c)
-        self.assertEqual(part.number_id, n)
+        assert part.id is not None
+        assert part.name == 'carantam'
+        assert part.root.name == 'car'
+        assert part.stem.name == 'carat'
+        assert part.gender_id == g
+        assert part.case_id == c
+        assert part.number_id == n
 
     def test_prefixed_verb(self):
         """Test prefixed verbs."""
@@ -212,7 +211,7 @@ class FormTestCase(SchemaTestCase):
         enum = self.enum
 
         p, n, m, v = (enum['person']['3'], enum['number']['s'],
-                      enum['mode']['pres'], enum['voice']['P'])
+                      enum['mode']['pres'], enum['voice']['para'])
 
         root = self.add_root('gam')
         p1 = VerbPrefix(name='upa')
@@ -230,17 +229,17 @@ class FormTestCase(SchemaTestCase):
         session.add(verb)
         session.commit()
 
-        self.assertTrue(root.id is not None)
-        self.assertTrue(proot.id is not None)
-        self.assertTrue(p1.id is not None)
-        self.assertTrue(p2.id is not None)
-        self.assertTrue(verb.id is not None)
+        assert root.id is not None
+        assert proot.id is not None
+        assert p1.id is not None
+        assert p2.id is not None
+        assert verb.id is not None
         session.close()
 
         verb = session.query(Verb).first()
         prefixes = [x.name for x in verb.root.prefixes]
-        self.assertEqual(verb.root.name, 'upasaMgam')
-        self.assertEqual(prefixes, ['upa', 'sam'])
+        assert verb.root.name == 'upasaMgam'
+        assert prefixes == ['upa', 'sam']
 
     def test_modified_verb(self):
         """Test modified verbs."""
@@ -249,7 +248,7 @@ class FormTestCase(SchemaTestCase):
 
         mod = enum['modification']['caus']
         p, n, m, v = (enum['person']['3'], enum['number']['s'],
-                     enum['mode']['impv'], enum['voice']['P'])
+                     enum['mode']['impv'], enum['voice']['para'])
 
         root = self.add_root('gam')
         mroot = ModifiedRoot(name='gamaya', basis_id=root.id)
@@ -262,16 +261,16 @@ class FormTestCase(SchemaTestCase):
         session.add(verb)
         session.commit()
 
-        self.assertTrue(root.id is not None)
-        self.assertTrue(mroot.id is not None)
-        self.assertTrue(verb.id is not None)
+        assert root.id is not None
+        assert mroot.id is not None
+        assert verb.id is not None
         session.close()
 
         verb = session.query(Verb).first()
         mods = [x.id for x in verb.root.modifications]
-        self.assertEqual(verb.root.name, 'gamaya')
-        self.assertEqual(verb.root.basis.name, 'gam')
-        self.assertEqual(mods, [mod])
+        assert verb.root.name == 'gamaya'
+        assert verb.root.basis.name == 'gam'
+        assert mods == [mod]
 
     def test_prefixed_modified_verb(self):
         """Test modified verbs with prefixes."""
@@ -280,7 +279,7 @@ class FormTestCase(SchemaTestCase):
 
         mod = enum['modification']['caus']
         p, n, m, v = (enum['person']['3'], enum['number']['s'],
-                      enum['mode']['opt'], enum['voice']['P'])
+                      enum['mode']['opt'], enum['voice']['para'])
 
         root = self.add_root('gam')
         p1 = VerbPrefix(name='upa')
@@ -299,14 +298,14 @@ class FormTestCase(SchemaTestCase):
         session.add(verb)
         session.commit()
 
-        self.assertTrue(root.id is not None)
-        self.assertTrue(pmroot.id is not None)
-        self.assertTrue(verb.id is not None)
+        assert root.id is not None
+        assert pmroot.id is not None
+        assert verb.id is not None
         session.close()
         verb = session.query(Verb).first()
         mods = [x.id for x in verb.root.modifications]
         prefixes = [x.name for x in verb.root.prefixes]
-        self.assertEqual(verb.root.name, 'upasaMgamaya')
-        self.assertEqual(verb.root.basis.name, 'gam')
-        self.assertEqual(mods, [mod])
-        self.assertEqual(prefixes, ['upa', 'sam'])
+        assert verb.root.name == 'upasaMgamaya'
+        assert verb.root.basis.name == 'gam'
+        assert mods == [mod]
+        assert prefixes == ['upa', 'sam']
