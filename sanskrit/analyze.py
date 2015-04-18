@@ -22,7 +22,16 @@ Nominal = namedtuple('Nominal', ['name', 'pos_id', 'stem', 'gender_id',
                                  'case_id', 'number_id', 'compounded'])
 
 
-class SimpleAnalyzer(object):
+class Analyzer(object):
+
+    def __init__(self):
+        raise NotImplementedError
+
+    def analyze(self, token):
+        raise NotImplementedError
+
+
+class SimpleAnalyzer(Analyzer):
 
     """A simple analyzer for Sanskrit words. The analyzer is simple
     for a few reasons:
@@ -122,7 +131,7 @@ class SimpleAnalyzer(object):
 
             # For nouns, disregard endings that don't match the stem's
             # genders.
-            if stem.pos_id == Tag.NOUN:
+            if stem.pos_id == Tag.NOMINAL:
                 stem_genders = gender_set[stem.genders_id]
                 endings = (e for e in stem_endings_map[name]
                            if e.gender_id in stem_genders)

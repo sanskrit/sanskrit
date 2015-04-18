@@ -400,7 +400,6 @@ def add_nominal_stems(ctx):
     # are a little more low-level.
 
     conn = ctx.engine.connect()
-    # TODO: is the noun/adjective distinction worth making in the schema?
     ins = NominalStem.__table__.insert()
     gender_group = ENUM['gender_group']
 
@@ -409,14 +408,10 @@ def add_nominal_stems(ctx):
     tick = util.tick_every(5000)
     for row in util.read_csv(ctx.config['NOMINAL_STEMS']):
         genders_id = gender_group[row['stem_genders']]
-        if genders_id == gender_group['mfn']:
-            pos_id = Tag.ADJECTIVE
-        else:
-            pos_id = Tag.NOUN
 
         buf.append({
             'name': row['stem'],
-            'pos_id': pos_id,
+            'pos_id': Tag.NOMINAL,
             'genders_id': genders_id,
         })
 
@@ -528,7 +523,7 @@ def add_pronouns(ctx):
             util.tick(stem)
 
         stem_id = seen_stems[(stem, genders_id)]
-        session.add(Pronoun(stem_id=stem_id, name=row['form'],
+        session.add(Nominal(stem_id=stem_id, name=row['form'],
                             gender_id=gender[row['form_gender']],
                             case_id=case[row['case']],
                             number_id=number[row['number']]))
