@@ -178,6 +178,8 @@ def add_roots(ctx, prefix_map):
     tick = util.tick_every(100)
     for row in util.read_csv(ctx.config['UNPREFIXED_ROOTS']):
         name, hom = row['root'], row['hom']
+
+        # A root can have multiple paradigms (= multiple appearances)
         if (name, hom) in root_map:
             continue
 

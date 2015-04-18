@@ -65,6 +65,12 @@ class SimpleAnalyzer(Analyzer):
                 'is_consonant_stem': is_cons,
             }
             self.nominal_endings[e.name[::-1]] = Ending(**data)
+            if 'n' in e.name:
+                # TODO: do this more rigorously
+                reversed_name = e.name.replace('n', 'R')
+                data['name'] = reversed_name
+                self.nominal_endings[reversed_name[::-1]] = Ending(**data)
+
 
         self.session.remove()
 
