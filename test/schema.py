@@ -117,11 +117,11 @@ class FormTestCase(SchemaTestCase):
         session = self.session
         enum = self.enum
 
-        stem = NounStem(name='nara')
+        stem = NominalStem(name='nara')
         session.add(stem)
         session.flush()
 
-        noun = Noun(stem=stem, name='narasya', gender_id=enum['gender']['m'],
+        noun = Nominal(stem=stem, name='narasya', gender_id=enum['gender']['m'],
                     case_id=enum['case']['6'], number_id=enum['number']['s'])
         session.add(noun)
         session.commit()
@@ -132,12 +132,12 @@ class FormTestCase(SchemaTestCase):
 
         # Stem
         stem = session.query(Stem).first()
-        assert stem.pos_id == Tag.NOUN
+        assert stem.pos_id == Tag.NOMINAL
         assert stem.name == 'nara'
 
-        # Noun
-        noun = session.query(Noun).first()
-        assert noun.pos_id == Tag.NOUN
+        # Nominal
+        noun = session.query(Nominal).first()
+        assert noun.pos_id == Tag.NOMINAL
         assert noun.name == 'narasya'
         assert noun.gender_id == enum['gender']['m']
         assert noun.case_id == enum['case']['6']

@@ -213,17 +213,16 @@ class Tag(SimpleBase):
     """
 
     VERB = 1
-    NOUN = 2
+    NOMINAL = 2
     PRONOUN = 3
-    ADJECTIVE = 4
-    PARTICIPLE = 5
-    INDECLINABLE = 6
-    VERBAL_INDECLINABLE = 7
-    GERUND = 8
-    INFINITIVE = 9
-    PERFECT_INDECLINABLE = 10
-    NOUN_PREFIX = 11
-    VERB_PREFIX = 12
+    PARTICIPLE = 4
+    INDECLINABLE = 5
+    VERBAL_INDECLINABLE = 6
+    GERUND = 7
+    INFINITIVE = 8
+    PERFECT_INDECLINABLE = 9
+    NOUN_PREFIX = 10
+    VERB_PREFIX = 11
 
 
 # Unfinished forms
@@ -393,12 +392,12 @@ class Stem(SimpleBase):
     __mapper_args__ = {'polymorphic_on': pos_id}
 
 
-class NounStem(Stem):
+class NominalStem(Stem):
 
-    """Stem of a :class:`Noun`."""
+    """Stem of a :class:`Nominal`."""
 
     __tablename__ = None
-    __mapper_args__ = {'polymorphic_identity': Tag.NOUN}
+    __mapper_args__ = {'polymorphic_identity': Tag.NOMINAL}
 
 
 class PronounStem(Stem):
@@ -407,14 +406,6 @@ class PronounStem(Stem):
 
     __tablename__ = None
     __mapper_args__ = {'polymorphic_identity': Tag.PRONOUN}
-
-
-class AdjectiveStem(Stem):
-
-    """Stem of an :class:`Adjective`."""
-
-    __tablename__ = None
-    __mapper_args__ = {'polymorphic_identity': Tag.ADJECTIVE}
 
 
 class ParticipleStem(Stem):
@@ -551,9 +542,9 @@ class PerfectIndeclinable(VerbalIndeclinable):
     __mapper_args__ = {'polymorphic_identity': Tag.PERFECT_INDECLINABLE}
 
 
-class Nominal(Form):
+class AbstractNominal(Form):
 
-    """A complete form. This corresponds to Panini's **subanta**."""
+    """A complete nominal form. This corresponds to Panini's **subanta**."""
 
     __tablename__ = 'nominal'
     id = Column(ForeignKey(Form.id), primary_key=True)
@@ -569,36 +560,13 @@ class Nominal(Form):
     number = relationship(Number)
 
 
-class Noun(Nominal):
-
-    """A complete form."""
+class Nominal(AbstractNominal):
 
     __tablename__ = None
-    __mapper_args__ = {'polymorphic_identity': Tag.NOUN}
+    __mapper_args__ = {'polymorphic_identity': Tag.NOMINAL}
 
 
-class Pronoun(Nominal):
-
-    """A complete form. This partially corresponds to Panini's **sarvanāman**:
-
-        | 1.1.26 "sarva" etc. are called `sarvanāman`.
-
-    However, adjectival words like "sarva" and "eka" are stored as adjectives.
-    """
-
-    __tablename__ = None
-    __mapper_args__ = {'polymorphic_identity': Tag.PRONOUN}
-
-
-class Adjective(Nominal):
-
-    """A complete form. This corresponds to Panini's **viśeṣaṇa**."""
-
-    __tablename__ = None
-    __mapper_args__ = {'polymorphic_identity': Tag.ADJECTIVE}
-
-
-class Participle(Nominal):
+class Participle(AbstractNominal):
 
     """A complete form. This corresponds to Panini's **niṣṭhā** and **sat**.
     Moreover, it also corresponds to **kvasu**."""

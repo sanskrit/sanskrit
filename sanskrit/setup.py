@@ -401,7 +401,7 @@ def add_nominal_stems(ctx):
 
     conn = ctx.engine.connect()
     # TODO: is the noun/adjective distinction worth making in the schema?
-    ins = NounStem.__table__.insert()
+    ins = NominalStem.__table__.insert()
     gender_group = ENUM['gender_group']
 
     buf = []
