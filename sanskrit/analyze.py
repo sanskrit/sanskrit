@@ -18,9 +18,6 @@ Ending = namedtuple('Ending', ['name', 'length', 'stem_type', 'gender_id',
                                'case_id', 'number_id', 'compounded',
                                'is_consonant_stem'])
 
-Nominal = namedtuple('Nominal', ['name', 'pos_id', 'stem', 'gender_id',
-                                 'case_id', 'number_id', 'compounded'])
-
 
 class Analyzer(object):
 
@@ -138,6 +135,7 @@ class SimpleAnalyzer(Analyzer):
 
             # For nouns, disregard endings that don't match the stem's
             # genders.
+            # TODO: fix semantics of this
             if stem.pos_id == Tag.NOMINAL:
                 stem_genders = gender_set[stem.genders_id]
                 endings = (e for e in stem_endings_map[name]
