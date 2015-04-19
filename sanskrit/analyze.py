@@ -112,7 +112,7 @@ class SimpleAnalyzer(Analyzer):
         for e in endings:
             truncated_stem = word[:-e.length] or word
             if e.is_consonant_stem:
-                # Use some basic
+                # Stem must exist and end in a consonant.
                 if not truncated_stem:
                     continue
                 if truncated_stem[-1] in sounds.VOWELS:
@@ -124,6 +124,9 @@ class SimpleAnalyzer(Analyzer):
                 stem = truncated_stem + e.stem_type
 
             stem_endings_map[stem].add(e)
+
+        if not stem_endings_map:
+            return []
 
         # Check which of these stems are viable
         stems = session.query(Stem) \
