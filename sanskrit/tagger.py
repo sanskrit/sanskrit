@@ -1,6 +1,11 @@
 from sanskrit import analyze, sandhi, schema
 
 
+class NonForm:
+    def __init__(self, name):
+        self.name = name
+
+
 class TaggedItem:
 
     def __init__(self, segment_id, chunk_index, form):
@@ -12,13 +17,17 @@ class TaggedItem:
         strings = []
         enums = ctx.enum_abbr
         for field in fields:
-            strings.append(enums[field][getattr(self.form, field + '_id')])
+            id = getattr(self.form, field + '_id')
+            if id is not None:
+                strings.append(enums[field][id])
+            else:
+                strings.append('')
         return '-'.join(strings)
 
     def human_readable_form(self, ctx):
         form = self.form
-        if isinstance(form, basestring):
-            return (form, '', '', '')
+        if isinstance(form, NonForm):
+            return (form.name, '', '', '')
         elif isinstance(form, schema.Indeclinable):
             return (form.name, 'indeclinable', '', '')
         elif isinstance(form, schema.Verb):
@@ -71,4 +80,4 @@ class Tagger:
             for item in done:
                 yield TaggedItem(segment_id, chunk_id, item)
             if not done:
-                yield TaggedItem(segment_id, chunk_id, chunk)
+                yield TaggedItem(segment_id, chunk_id, NonForm(chunk))
