@@ -1,48 +1,58 @@
 # -*- coding: utf-8 -*-
 """
-sanskrit.language.sounds
-~~~~~~~~~~~~~~~~~~~~~~~~
+    sanskrit.sounds
+    ~~~~~~~~~~~~~~~
 
-Everything to do with Sanskrit sounds.
+    Code for checking and transforming Sanskrit sounds. This module also
+    contains basic metrical functions (see :func:`sanskrit.sounds.meter`
+    and :func:`sanskrit.sounds.num_syllables`).
 
-:license: MIT and BSD
+    All functions assume SLP1.
+
+    :license: MIT
 """
 
-ALL = set("aAiIuUfFxXeEoOMHkKgGNcCjJYwWqQRtTdDnpPbBmyrlvSzsh '~")
+#: All legal sounds, including anusvara, ardhachandra, and Vedic `'L'`.
+ALL_SOUNDS = frozenset("aAiIuUfFxXeEoOMHkKgGNcCjJYwWqQRtTdDnpPbBmyrlLvSzsh'~")
 
-VOWELS = set('aAiIuUfFxXeEoO')
-SHORT_VOWELS = set('aiufx')
-LONG_VOWELS = VOWELS - SHORT_VOWELS
+#: All legal tokens, including sounds, punctuation (`'|'`), and whitespace.
+ALL_TOKENS = ALL_SOUNDS | {'|', ' ', '\n'}
 
-STOPS = set('kKgGcCjJwWqQtTdDpPbB')
-NASALS = set('NYRnm')
-SEMIVOWELS = set('yrlLv')
-SAVARGA = set('Szsh')
+#: All vowels.
+VOWELS = frozenset('aAiIuUfFxXeEoO')
+
+#: Short vowels.
+SHORT_VOWELS = frozenset('aiufx')
+
+#: Stop consonants.
+STOPS = frozenset('kKgGcCjJwWqQtTdDpPbB')
+
+#: Nasals.
+NASALS = frozenset('NYRnm')
+
+#: Semivowels.
+SEMIVOWELS = frozenset('yrlLv')
+
+#: Savarga
+SAVARGA = frozenset('Szsh')
+
+#: Consonants.
 CONSONANTS = STOPS.union(NASALS).union(SEMIVOWELS).union(SAVARGA)
 
-SOUNDS = VOWELS.union(CONSONANTS).union(set('HM'))
-
-ASPIRATED_STOPS = set('KGCJWQTDPB')
-VOICED_ASPIRATED_STOPS = set('GJQDB')
-UNASPIRATED_STOPS = STOPS - ASPIRATED_STOPS
-RETROFLEXES = set('wWqQRz')
-
-VOICED_SOUNDS = set('aAiIuUfFxXeEoOgGNjJYqQRdDnbBmyrlvh')
-VALID_FINALS = set('aAiIuUfeEoOkwtpNnmsr')
+#: Valid word-final sounds.
+VALID_FINALS = frozenset('aAiIuUfeEoOkwtpNnmsr')
 
 
 # General functions
 # -----------------
 
-def clean(phrase, valid=None):
+def clean(phrase, valid):
     """Remove all characters from `phrase` that are not in `valid`.
 
     :param phrase: the phrase to clean
-    :param valid: the set of valid characters. By default, this includes
-                  all letters in the SLP1 alphabet, as well as ``'``, ``~``,
-                  and the space character.
+    :param valid: the set of valid characters. A sensible default is
+                  `sounds.ALL_TOKENS`.
     """
-    valid = valid or ALL
     return ''.join([L for L in phrase if L in valid])
 
 
@@ -51,7 +61,7 @@ def key_fn(s):
     sa = "aAiIuUfFxXeEoOMHkKgGNcCjJYwWqQRtTdDnpPbBmyrlvSzsh '~"
     en = "123ABCDEFGHIJKLMNOPQRSTUVWabcdefghijklmnopqrstuvwxyz"
     mapper = dict(zip(sa, en))
-    mapped = map(mapper.__getitem__, [x for x in s if x in ALL])
+    mapped = map(mapper.__getitem__, [x for x in s if x in ALL_SOUNDS])
     return ''.join(mapped)
 
 
@@ -93,10 +103,9 @@ def letter_transform(name, docstring=None):
         return get(L, L)
 
     if docstring is None:
-        docstring = """{0} `letter`. If this is not possible, return `letter`
-        unchanged.
+        docstring = """{0} `L`. If this is not possible, return `L` unchanged.
 
-        :param letter: the letter to {1}
+        :param L: the letter to {1}
         """.format(name.capitalize(), name)
 
     func.__name__ = name
@@ -203,7 +212,7 @@ def meter(phrase, heavy='_', light='.'):
     # syllable weight can depend on later consonants, we have to look ahead
     # to determine the proper weight. An easy way to do that is to reverse
     # the string:
-    for L in clean(phrase, SOUNDS)[::-1]:
+    for L in clean(phrase, ALL_SOUNDS)[::-1]:
         if L in VOWELS:
             if saw_cluster or L not in SHORT_VOWELS:
                 append(heavy)

@@ -15,7 +15,8 @@ from . import TestCase
 class CleanTestCase(TestCase):
     def test(self):
         func = sounds.clean
-        self.assertEqual('kaTam idam', func('kaTam! idam...'))
+        self.assertEqual('kaTam idam', func('kaTam! idam...',
+                         sounds.ALL_TOKENS))
         self.assertEqual('kTmdm', func('ka!!!Tamida23m//', sounds.CONSONANTS))
 
 
@@ -101,7 +102,7 @@ class MeterTestCase(TestCase):
         """Test some simple syllables."""
         for v in sounds.SHORT_VOWELS:
             self.assertEqual('.', ''.join(sounds.meter(v)))
-        for v in sounds.LONG_VOWELS:
+        for v in 'AIUFXeEoO':
             self.assertEqual('_', ''.join(sounds.meter(v)))
         for groups in ['aM naH yuG']:
             self.assertEqual('_', ''.join(sounds.meter(v)))
