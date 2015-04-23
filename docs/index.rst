@@ -5,6 +5,7 @@ sanskrit Documentation
    :maxdepth: 2
 
    api
+   schema
 
 * :ref:`genindex`
 * :ref:`search`

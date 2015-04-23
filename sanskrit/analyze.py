@@ -3,9 +3,11 @@
     sanskrit.analyze
     ~~~~~~~~~~~~~~~~
 
-    Analyze a Sanskrit form and break it down to its basic parts.
+    Code for *analyzing* Sanskrit forms, i.e. finding the basic lexical
+    forms that produced them and specifying the word's inflectional
+    information.
 
-    :license: MIT and BSD
+    :license: MIT
 """
 
 from collections import defaultdict, namedtuple
@@ -20,6 +22,8 @@ Ending = namedtuple('Ending', ['name', 'length', 'stem_type', 'gender_id',
 
 
 class Analyzer(object):
+
+    """analyzer"""
 
     def __init__(self):
         raise NotImplementedError
@@ -71,20 +75,9 @@ class SimpleAnalyzer(Analyzer):
 
         self.session.remove()
 
-    def analyze(self, word):
-        """Return all possible solutions for the given word. Any ORM
-        objects used in these solutions will be in a detached state.
-
-        :param word: the word to analyze. This should be a completeh
-                     word, or what Panini would call a *pada*.
+    def _analyze_as_form(self, word):
         """
-        returned = self.analyze_word(word)
-        returned.extend(self.analyze_nominal(word))
-        return returned
-
-    def analyze_word(self, word):
-        """
-        Analyze an arbitrary word.
+        Analyze a word by searching for an exact match in the database.
 
         :param word: the word to analyze
         """
@@ -92,9 +85,10 @@ class SimpleAnalyzer(Analyzer):
         results = session.query(Form).filter(Form.name == word).all()
         return results
 
-    def analyze_nominal(self, word):
+    def _analyze_as_stem(self, word):
         """
-        Analyze a nominal word.
+        Analyze a word by searching for the nominal stems that might
+        have produced it.
 
         :param word: the word to analyze
         """
@@ -155,4 +149,15 @@ class SimpleAnalyzer(Analyzer):
                 }
                 returned.append(Nominal(**datum))
 
+        return returned
+
+    def analyze(self, word):
+        """Return all possible solutions for the given word. Any ORM
+        objects used in these solutions will be in a detached state.
+
+        :param word: the word to analyze. This should be a complete
+                     word, or what Panini would call a *pada*.
+        """
+        returned = self._analyze_as_form(word)
+        returned.extend(self._analyze_as_stem(word))
         return returned
