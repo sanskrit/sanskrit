@@ -14,8 +14,14 @@ Sounds and sandhi
    :members:
 
 
-Linguistic forms
-----------------
+Database schema
+---------------
+.. automodule:: sanskrit.schema
+   :members:
+
+
+Analyzing forms
+---------------
 .. automodule:: sanskrit.analyze
 .. autoclass:: sanskrit.analyze.SimpleAnalyzer
    :members:
