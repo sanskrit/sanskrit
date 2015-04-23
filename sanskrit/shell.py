@@ -21,8 +21,8 @@ class Color:
     BLUE = '\033[94m'
     GREEN = '\033[92m'
     YELLOW = '\033[93m'
-
     RED = '\033[91m'
+
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
@@ -72,7 +72,23 @@ def int_or_none(x, limit):
         return None
 
 
-def run(ctx, segment):
+def print_help():
+    print with_color('1  : get alternatives for form 1', Color.GREEN)
+    print with_color('s  : re-split the chunk', Color.GREEN)
+    print with_color('pc : previous chunk', Color.GREEN)
+    print with_color('nc : next chunk', Color.GREEN)
+    print with_color('q  : quit', Color.GREEN)  # TODO: save and quit
+    print with_color('?  : help', Color.GREEN)
+
+
+def segment_repl(ctx, segment):
+    print with_color('*' + '-' * 50, Color.GREEN + Color.BOLD)
+    print with_color('* ', Color.GREEN + Color.BOLD)
+    print with_color('* Interactive Sanskrit tagger', Color.GREEN + Color.BOLD)
+    print with_color('* ', Color.GREEN + Color.BOLD)
+    print with_color('*' + '-' * 50, Color.GREEN + Color.BOLD)
+    print_help()
+
     t = tagger.Tagger(ctx)
 
     # Chunk index -> list of TaggedItems
@@ -84,6 +100,7 @@ def run(ctx, segment):
     index = 0
     chunks = list(t.iter_chunks(segment))
     n = len(chunks)
+
     while index < n:
         if re.match("^[0-9|./]+$", chunks[index]):
             index += 1
@@ -97,15 +114,22 @@ def run(ctx, segment):
         print
 
         command = raw_input(": ")
-        int_command = int_or_none(command, limit=n)
+        int_command = int_or_none(command, limit=len(items_for_chunk[index]))
 
         # All OK
-        if not command:
+        if not command or command == 'nc':
             index += 1
 
+        elif command == '?' or command == 'help':
+            print_help()
+
         # Go back one
-        elif command == 'back':
-            index -= 1
+        elif command == 'pc':
+            if index > 0:
+                index -= 1
+
+        elif command == 'q':
+            return
 
         # Bad split
         elif command == 's':
@@ -130,8 +154,18 @@ def run(ctx, segment):
 
             items_for_chunk[index][int_command - 1] = candidate_items[choice - 1]
 
+        else:
+            print
+            msg = "Unrecognized command '%s'. Try one of these:" % command
+            print with_color(msg, Color.BOLD + Color.GREEN)
+            print_help()
+
     # All done!
     # TODO: write to file
     for i in range(n):
         for item in items_for_chunk[i]:
             print item.human_readable_form(ctx)
+
+
+def run(ctx, segment):
+    segment_repl(ctx, segment)
