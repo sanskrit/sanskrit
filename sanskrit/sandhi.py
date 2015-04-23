@@ -3,9 +3,9 @@
     sanskrit.sandhi
     ~~~~~~~~~~~~~~~
 
-    Sandhi operations.
+    Classes that apply and undo sandhi rules.
 
-    :license: MIT and BSD
+    :license: MIT
 """
 
 from . import sounds
@@ -36,24 +36,25 @@ class Joiner(SandhiObject):
     """Joins multiple Sanskrit terms by applying sandhi rules."""
 
     def __init__(self, rules=None):
-        """"""
         self.data = {}
         if rules:
             self.add_rules(rules)
 
     def add_rules(self, rules):
-        """Add rules for joining words. Rules are 3-tuples that contain:
+        """Add rules for joining words.
+
+        Example usage::
+
+            joiner.add_rules[('a', 'i', 'e'), ('a', 'a', 'A'])
+
+        :param rules: a list of 3-tuples, each of which contains:
 
         - the first part of the combination
         - the second part of the combination
         - the result
 
-        An example::
-
-            rule = ('a', 'i', 'e')
-
-        :param rules: a list of rules
         """
+        self.data = {}
         for first, second, result in rules:
             self.data[(first, second)] = result
 
@@ -61,7 +62,7 @@ class Joiner(SandhiObject):
     def internal_retroflex(term):
         """Apply the "n -> ṇ" and "s -> ṣ" rules of internal sandhi.
 
-        :param term: the term to process
+        :param term: the string to process
         """
         # causes "s" retroflexion
         s_trigger = set('iIuUfFeEoOkr')
@@ -122,13 +123,12 @@ class Joiner(SandhiObject):
         One simple way to account for these rules is to wrap exempt strings
         with :class:`Exempt`::
 
-            assert 'ta iti' == s.join('te', 'iti')
-            assert 'te iti' == s.join(Exempt('te'), 'iti')
+            assert joiner.join('te', 'iti') == 'ta iti'
+            assert joiner.join(Exempt('te'), 'iti') == 'te iti'
 
-        :param chunks: the chunks to stitch together
-        :key internal: the separator to use between non-joined terms. By
-                        default, this is a single space ``' '``. For internal
-                        sandhi, this should be set to ``''``.
+        :param chunks: a list of the strings that should be joined
+        :param internal: if true, join words using the empty string instead of
+                         `' '`.
         """
         separator = '' if internal else ' '
 
@@ -159,6 +159,7 @@ class Joiner(SandhiObject):
             return Joiner.internal_retroflex(returned)
         else:
             return returned
+
 
 class Splitter(object):
 
