@@ -14,7 +14,7 @@
     :license: MIT
 
 """
-from sanskrit import analyze, sandhi, schema
+from sanskrit import analyze, sandhi, schema, util
 
 
 class NonForm:
@@ -23,6 +23,29 @@ class NonForm:
 
     def __init__(self, name):
         self.name = name
+
+    def __repr__(self):
+        return "NonForm('{}')".format(self.name)
+
+
+class Model:
+
+    """A statistical model used to calculate conditional probabilities."""
+
+    def __init__(self):
+        pass
+
+    def log_cond_prob(self, before, cur):
+        """Return the log probability of `cur` given the items in `before`
+
+        :param before: a list of :class:`TaggedItem` objects.
+        :param cur: the most recent :class:`TaggedItem`
+        """
+        # TODO: non-heuristic solution
+        if isinstance(cur, NonForm):
+            return -1
+        else:
+            return len(cur.name)
 
 
 class TaggedItem:
@@ -78,6 +101,7 @@ class Tagger:
         self.ctx = ctx
         self.splitter = sandhi.Splitter(rules)
         self.analyzer = analyze.SimpleAnalyzer(ctx)
+        self.model = Model()
 
     def iter_chunks(self, segment):
         """Iterate over the chunks in `segment`.
@@ -95,18 +119,43 @@ class Tagger:
         :param segment: an arbitrary string
         :return: a list of :class:`TaggedItem` objects.
         """
-        for chunk_id, chunk in enumerate(self.iter_chunks(segment)):
-            stack = [([], chunk)]
-            while stack:
-                done, remainder = stack.pop()
-                if not remainder:
+        chunks = list(self.iter_chunks(segment))
+        if not chunks:
+            return
+
+        q = util.PriorityQueue()
+        q.push(([], 0, chunks[0]), 0)
+
+        done = []
+        while q:
+            (done, chunk_index, remainder), priority = q.pop_with_priority()
+            # Chunk is done
+            if not remainder:
+                if chunk_index + 1 < len(chunks):
+                    new_state = (done, chunk_index + 1, chunks[chunk_index + 1])
+                    q.push(new_state, priority)
+                    continue
+                else:
+                    # Segment is done!
                     break
 
-                for before, after in self.splitter.iter_splits(remainder):
-                    for result in self.analyzer.analyze(before):
-                        stack.append((done + [result], after))
+            for before, after in self.splitter.iter_splits(remainder):
+                # Without this line, the tagger could loop forever. This
+                # looping occurs if a sandhi rule has the form "X -> Y X",
+                # which yields Y while leaving the term with X unchanged.
+                if remainder == after: continue
 
-            for item in done:
-                yield TaggedItem(segment_id, chunk_id, item)
-            if not done:
-                yield TaggedItem(segment_id, chunk_id, NonForm(chunk))
+                for result in self.analyzer.analyze(before):
+                    item = TaggedItem(segment_id, chunk_index, result)
+                    q.push((done + [item], chunk_index, after),
+                            priority + self.model.log_cond_prob(done, result))
+
+            # Add "default" state in case nothing could be found.
+            if remainder == chunks[chunk_index]:
+                result = NonForm(remainder)
+                item = TaggedItem(segment_id, chunk_index, result)
+                new_state = (done + [item], chunk_index, None)
+                q.push(new_state, priority +
+                       self.model.log_cond_prob(done, result))
+
+        return done

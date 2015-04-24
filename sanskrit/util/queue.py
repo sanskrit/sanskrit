@@ -3,7 +3,7 @@ import heapq
 
 class PriorityQueue(object):
 
-    """A priority queue. Lower values are popped first."""
+    """A priority queue. Higher values are popped first."""
 
     def __init__(self):
         self.heap = []
@@ -20,7 +20,7 @@ class PriorityQueue(object):
 
     def __iter__(self):
         for priority, item in self.heap:
-            yield (item, priority)
+            yield (item, -priority)
 
     def push(self, item, priority=0):
         """Add an item to the queue.
@@ -28,7 +28,7 @@ class PriorityQueue(object):
         :param item: the item to add
         :param priority: the priority to use
         """
-        pair = (priority, item)
+        pair = (-priority, item)
         heapq.heappush(self.heap, pair)
 
     def pop(self):
@@ -43,7 +43,7 @@ class PriorityQueue(object):
         ::
         """
         (priority, item) = heapq.heappop(self.heap)
-        return (item, priority)
+        return (item, -priority)
 
     def peek(self):
         """Read the highest-priority item and its priority without removing
@@ -55,4 +55,4 @@ class PriorityQueue(object):
         If the queue is empty, throw an :exc:`IndexError`.
         """
         priority, item = self.heap[0]
-        return (item, priority)
+        return (item, -priority)

@@ -22,11 +22,11 @@ class QueueTestCase(TestCase):
         for i in range(5):
             q.push(i, -i)
 
-        self.assertEqual(len(q), 5)
-        self.assertEqual(4, q.pop())
-        self.assertEqual(3, q.pop())
-        self.assertEqual((2, -2), q.pop_with_priority())
-        self.assertEqual(len(q), 2)
+        assert len(q) == 5
+        assert q.pop() == 0
+        assert q.pop() == 1
+        assert q.pop_with_priority() == (2, -2)
+        assert len(q) == 2
 
     def test_peek(self):
         """Test peeking at the top of the queue."""
