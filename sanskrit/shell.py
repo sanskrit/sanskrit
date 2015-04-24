@@ -93,7 +93,7 @@ def segment_repl(ctx, segment):
 
     # Chunk index -> list of TaggedItems
     items_for_chunk = {}
-    for item in t.tag_segment(segment):
+    for item in t.tag(segment):
         items_for_chunk.setdefault(item.chunk_index, []).append(item)
 
     # Chunk index -> highlighted chunk

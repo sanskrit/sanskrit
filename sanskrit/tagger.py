@@ -88,7 +88,7 @@ class Tagger:
             for chunk in line.split():
                 yield chunk
 
-    def tag_segment(self, segment, segment_id=None):
+    def tag(self, segment, segment_id=None):
         """Return the linguistic forms that compose `segment`. If a form
         can't be parsed, it's wrapped in :class:`NonForm`.
 
