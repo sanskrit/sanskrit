@@ -83,9 +83,9 @@ def print_help():
 
 def segment_repl(ctx, segment):
     print with_color('*' + '-' * 50, Color.GREEN + Color.BOLD)
-    print with_color('* ', Color.GREEN + Color.BOLD)
+    print with_color('*', Color.GREEN + Color.BOLD)
     print with_color('* Interactive Sanskrit tagger', Color.GREEN + Color.BOLD)
-    print with_color('* ', Color.GREEN + Color.BOLD)
+    print with_color('*', Color.GREEN + Color.BOLD)
     print with_color('*' + '-' * 50, Color.GREEN + Color.BOLD)
     print_help()
 

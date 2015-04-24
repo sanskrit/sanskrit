@@ -19,6 +19,7 @@ Sanskrit on various levels of abstraction:
 .. toctree::
    :maxdepth: 2
 
+   quickstart
    api
 
 * :ref:`genindex`
