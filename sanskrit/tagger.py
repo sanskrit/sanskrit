@@ -12,9 +12,9 @@
     ``'aTa'``, ``'SabdAnuSAsanam'``, and ``'|'``.
 
     :license: MIT
-
 """
-from sanskrit import analyze, sandhi, schema, util
+
+from sanskrit import analyze, models, sandhi, schema, util
 
 
 class NonForm:
@@ -26,26 +26,6 @@ class NonForm:
 
     def __repr__(self):
         return "NonForm('{}')".format(self.name)
-
-
-class Model:
-
-    """A statistical model used to calculate conditional probabilities."""
-
-    def __init__(self):
-        pass
-
-    def log_cond_prob(self, before, cur):
-        """Return the log probability of `cur` given the items in `before`
-
-        :param before: a list of :class:`TaggedItem` objects.
-        :param cur: the most recent :class:`TaggedItem`
-        """
-        # TODO: non-heuristic solution
-        if isinstance(cur, NonForm):
-            return -1
-        else:
-            return len(cur.name)
 
 
 class TaggedItem:
@@ -67,6 +47,25 @@ class TaggedItem:
             else:
                 strings.append('')
         return '-'.join(strings)
+
+    def tag(self, ctx):
+        form = self.form
+        if isinstance(form, NonForm):
+            tup = ('punct',)
+        if isinstance(form, schema.Indeclinable):
+            tup = ('indeclinable',)
+        elif isinstance(form, schema.Verb):
+            tup = ('verb', self._enum_string(ctx, ['person', 'number']))
+        elif isinstance(form, schema.Nominal):
+            tup = ('nominal',
+                    self._enum_string(ctx, ['gender', 'case', 'number']))
+        elif isinstance(form, schema.Infinitive):
+            tup = ('infinitive',)
+        elif isinstance(form, schema.Gerund):
+            tup = ('gerund',)
+        elif isinstance(form, schema.PerfectIndeclinable):
+            tup = ('perfect-indeclinable',)
+        return '-'.join(tup)
 
     def human_readable_form(self, ctx):
         form = self.form
@@ -101,7 +100,12 @@ class Tagger:
         self.ctx = ctx
         self.splitter = sandhi.Splitter(rules)
         self.analyzer = analyze.SimpleAnalyzer(ctx)
-        self.model = Model()
+        self.model = models.SequenceModel()
+
+    def _log_cond_prob(self, before, cur):
+        xs = [before[-1].tag(self.ctx)] if before else []
+        y = cur.tag(self.ctx)
+        return self.model.log_cond_prob(xs, y)
 
     def iter_chunks(self, segment):
         """Iterate over the chunks in `segment`.
@@ -148,7 +152,7 @@ class Tagger:
                 for result in self.analyzer.analyze(before):
                     item = TaggedItem(segment_id, chunk_index, result)
                     q.push((done + [item], chunk_index, after),
-                            priority + self.model.log_cond_prob(done, result))
+                            priority + self._log_cond_prob(done, item))
 
             # Add "default" state in case nothing could be found.
             if remainder == chunks[chunk_index]:
@@ -156,6 +160,6 @@ class Tagger:
                 item = TaggedItem(segment_id, chunk_index, result)
                 new_state = (done + [item], chunk_index, None)
                 q.push(new_state, priority +
-                       self.model.log_cond_prob(done, result))
+                       self._log_cond_prob(done, item))
 
         return done
