@@ -1,4 +1,13 @@
 # -*- coding: utf-8 -*-
+"""
+    sanskrit.context
+    ~~~~~~~~~~~~~~~~
+
+    Manages the package context. For details, see
+    :class:`~sanskrit.context.Context`.
+
+    :license: MIT
+"""
 import imp
 import os
 
@@ -16,12 +25,17 @@ class Context(object):
     connecting to the database.
 
     You can populate a context in several ways. For example, you can pass a
-    path to a Python module::
+    :class:`dict`::
+
+        context = Context({'DATABASE_URI': 'sqlite:///data.sqlite'})
+
+    or a path to a Python module::
 
         context = Context('project/config.py')
 
-    If you do so, only uppercase keys will be stored in the context. This lets
-    you use lowercase variables as temporary values.
+    If you initialize a context from a module, note that only uppercase
+    variables will be stored in the context. This lets you use lowercase
+    variables as temporary values.
 
     Config values are stored internally as a :class:`dict`, so you can always
     just use ordinary :class:`dict` methods::
@@ -39,7 +53,7 @@ class Context(object):
         #: :attr:`session`.
         self.config = {}
 
-        #: The :class:`~sqlalchemy.engine.base.Engine` that underlies
+        #: The :class:`~sqlalchemy.engine.Engine` that underlies
         #: the :attr:`session`.
         self.engine = None
 
