@@ -97,7 +97,7 @@ would produce the following output::
 Tagging text
 ------------
 
-The :class:`sanskrit.tagger.Tagger` class provides a way to analyze all of the
+The :class:`~sanskrit.tagger.Tagger` class provides a way to analyze all of the
 words in some Sanskrit passage. It does so by undoing the sandhi rules that
 separate different words then analyzing each of those words for a good parse.
 Since natural language is ambiguous, the tagger won't always produce "correct"

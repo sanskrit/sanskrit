@@ -32,7 +32,7 @@ Analyzing forms
    :members:
 
 
-Natural language processing
----------------------------
+Analyzing text
+--------------
 .. automodule:: sanskrit.tagger
    :members:
