@@ -94,8 +94,8 @@ would produce the following output::
     parasmaipada
 
 
-Tagging words
--------------
+Tagging text
+------------
 
 The :class:`sanskrit.tagger.Tagger` class provides a way to analyze all of the
 words in some Sanskrit passage. It does so by undoing the sandhi rules that
