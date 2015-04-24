@@ -10,7 +10,7 @@ Building the database
 The ``sanskrit`` package is most useful when it can work with linguistic data.
 Not all of the code in the `sanskrit` package requires access to this data,
 but the most interesting code does. This data is managed internally as an SQL
-database, but you don't know to know any SQL to work with it.
+database, but you don't need to know to know any SQL to work with it.
 
 The database is initialized from a set of special data files. To get that data,
 you can clone this repository from GitHub::
