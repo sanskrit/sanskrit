@@ -23,6 +23,7 @@ class SequenceModel:
     def __init__(self):
         self.prior = collections.Counter()
         self.joint = collections.Counter()
+        self.num_prior_events = 80   #TODO: don't hard code
 
     def _iter_ngrams(self, seq, size):
         iters = itertools.tee(seq, size)
@@ -50,6 +51,20 @@ class SequenceModel:
         """
         x_n = xs[-1] if len(xs) else None
         numerator = self.joint[(x_n, y)] + delta
-        denominator = self.prior[x_n] + len(self.prior.keys())
+        denominator = self.prior[x_n] + self.num_prior_events
         assert denominator > 0
         return math.log(numerator / denominator)
+
+
+class FeatureModel:
+
+    """Assigns a score using a small set of features."""
+
+    def score(self, item, remainder):
+        is_form = item.form.__class__.__name__ != 'NonForm'
+        if is_form:
+            item_len = len(item.form.name) if is_form else 0
+            finished_chunk = 0 if remainder else 1
+            return item_len + finished_chunk
+        else:
+            return 0

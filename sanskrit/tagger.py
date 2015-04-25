@@ -37,6 +37,10 @@ class TaggedItem:
         self.chunk_index = chunk_index
         self.form = form
 
+    def __repr__(self):
+        fields = (self.segment_id, self.chunk_index, self.form.name)
+        return 'TaggedItem({})'.format(fields)
+
     def _enum_string(self, ctx, fields):
         strings = []
         enums = ctx.enum_abbr
@@ -51,7 +55,7 @@ class TaggedItem:
     def tag(self, ctx):
         form = self.form
         if isinstance(form, NonForm):
-            tup = ('punct',)
+            return models.SEQUENCE_BOUNDARY
         if isinstance(form, schema.Indeclinable):
             tup = ('indeclinable',)
         elif isinstance(form, schema.Verb):
@@ -100,12 +104,14 @@ class Tagger:
         self.ctx = ctx
         self.splitter = sandhi.Splitter(rules)
         self.analyzer = analyze.SimpleAnalyzer(ctx)
-        self.model = models.SequenceModel()
+        self.model = models.FeatureModel()
 
-    def _log_cond_prob(self, before, cur):
-        xs = [before[-1].tag(self.ctx)] if before else []
-        y = cur.tag(self.ctx)
-        return self.model.log_cond_prob(xs, y)
+    def _score(self, before, cur, remainder):
+        """Compute a score over the given tagger state."""
+        # xs = [before[-1].tag(self.ctx)] if before else []
+        # y = cur.tag(self.ctx)
+        # return self.model.log_cond_prob(xs, y)
+        return self.model.score(cur, remainder)
 
     def iter_chunks(self, segment):
         """Iterate over the chunks in `segment`.
@@ -149,17 +155,17 @@ class Tagger:
                 # which yields Y while leaving the term with X unchanged.
                 if remainder == after: continue
 
-                for result in self.analyzer.analyze(before):
+                results = self.analyzer.analyze(before)
+                for result in results:
                     item = TaggedItem(segment_id, chunk_index, result)
                     q.push((done + [item], chunk_index, after),
-                            priority + self._log_cond_prob(done, item))
+                            priority + self._score(done, item, after))
 
             # Add "default" state in case nothing could be found.
             if remainder == chunks[chunk_index]:
                 result = NonForm(remainder)
                 item = TaggedItem(segment_id, chunk_index, result)
                 new_state = (done + [item], chunk_index, None)
-                q.push(new_state, priority +
-                       self._log_cond_prob(done, item))
+                q.push(new_state, priority + self._score(done, item, remainder))
 
         return done
