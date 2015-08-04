@@ -171,8 +171,8 @@ def add_roots(ctx, prefix_map):
 
     # TODO: modified roots
     session = ctx.session
-    vclass = ENUM['vclass']
-    voice = ENUM['voice']
+    e_vclass = ENUM['vclass']
+    e_voice = ENUM['voice']
 
     root_map = {}  # (name, hom) -> id
 
@@ -199,7 +199,8 @@ def add_roots(ctx, prefix_map):
 
         assert (name, hom) in root_map
         root_id = root_map[(name, hom)]
-        paradigm = Paradigm(root_id=root_id, vclass_id=vclass, voice_id=voice)
+        paradigm = Paradigm(root_id=root_id, vclass_id=e_vclass[vclass],
+                            voice_id=e_voice[voice])
         session.add(paradigm)
 
     session.commit()
