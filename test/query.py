@@ -38,9 +38,9 @@ class QueryTestCase(TestCase):
 
     def test_pronoun(self):
         expected = {
+            ('1', 's'): 'saH',
             ('1', 'd'): 'tO',
-            ('4', 's'): 'tasmE',
-            ('6', 'p'): 'tezAm',
+            ('1', 'p'): 'te',
         }
 
         Q = SimpleQuery(ctx)
@@ -48,13 +48,13 @@ class QueryTestCase(TestCase):
         abbr_actual = Q.pronoun('tad', 'm')
         self.verify(name_actual, expected)
         self.verify(abbr_actual, expected)
-        self.assertEqual(len(name_actual), 21)
+        self.assertEqual(len(name_actual), 3)
 
     def test_noun(self):
         expected = {
+            ('1', 's'): 'gajaH',
             ('1', 'd'): 'gajO',
-            ('4', 's'): 'gajAya',
-            ('6', 'p'): 'gajAnAm',
+            ('1', 'p'): 'gajAH',
         }
 
         Q = SimpleQuery(ctx)
@@ -67,18 +67,18 @@ class QueryTestCase(TestCase):
     def test_verb(self):
         expected = {
             ('3', 's'): 'gacCati',
-            ('3', 'd'): 'gacCatas',
+            ('3', 'd'): 'gacCataH',
             ('3', 'p'): 'gacCanti',
             ('2', 's'): 'gacCasi',
-            ('2', 'd'): 'gacCaTas',
+            ('2', 'd'): 'gacCaTaH',
             ('2', 'p'): 'gacCaTa',
             ('1', 's'): 'gacCAmi',
-            ('1', 'd'): 'gacCAvas',
-            ('1', 'p'): 'gacCAmas',
+            ('1', 'd'): 'gacCAvaH',
+            ('1', 'p'): 'gacCAmaH',
         }
 
         Q = SimpleQuery(ctx)
         name_actual = Q.verb('gam', 'present', 'parasmaipada')
-        abbr_actual = Q.verb('gam', 'pres', 'P')
+        abbr_actual = Q.verb('gam', 'pres', 'para')
         self.verify(name_actual, expected)
         self.verify(abbr_actual, expected)

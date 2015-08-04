@@ -66,12 +66,9 @@ class SimpleQuery(object):
         :param stem_name: the stem name
         :param gender: the noun gender
         """
-        stem = self._nominal_stem(stem_name, NounStem)
+        stem = self._nominal_stem(stem_name, NominalStem)
         if stem is None:
             return {}
-
-        print self.session.query(NounStem)\
-                          .filter(NounStem.name == stem_name).all()
 
         if stem.id in self.irregular_stems:
             gender_id = self.ctx.enum_id['gender'][gender]
