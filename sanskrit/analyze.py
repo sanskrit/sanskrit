@@ -54,6 +54,9 @@ class SimpleAnalyzer(Analyzer):
         for e in self.session.query(NominalEnding):
             stem_type = e.stem_type
             is_cons = (stem_type == NominalEnding.CONSONANT_STEM_TYPE)
+            if e.stem_type == "_": 
+                e.stem_type = ""
+                is_cons = True
 
             data = {
                 'name': e.name,

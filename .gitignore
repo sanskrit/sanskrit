@@ -1,1 +1,11 @@
 *.py[cod]
+
+# pydev project files
+.project
+.pydevproject
+.settings
+
+sanskrit.egg-info/
+build/
+dist/
+experiments/
