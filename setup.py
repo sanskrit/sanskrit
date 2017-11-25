@@ -23,7 +23,7 @@ setup(
 
     packages=find_packages(exclude=['docs', 'test*']),
     install_requires=['sqlalchemy >= 0.7', 
-                      'future'
+                      'future',
                       'six'],
     extras_require={
         'dev': ['pytest'],
