@@ -40,7 +40,7 @@ The original code is still `available`_.
 from __future__ import unicode_literals
 
 
-class Trie:
+class Trie(object):
 
     """A modified version of jtauber's original Trie."""
 

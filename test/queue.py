@@ -8,6 +8,7 @@ Tests the :class:`~sanskrit.util.queue.PriorityQueue` class.
 :license: MIT and BSD
 """
 
+from builtins import range
 import os
 from sanskrit.util import PriorityQueue
 from . import TestCase

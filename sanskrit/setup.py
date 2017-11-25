@@ -4,6 +4,7 @@ sanskrit.setup
 
 Setup code for various Sanskrit data.
 """
+from __future__ import print_function
 
 import sys
 
@@ -271,7 +272,7 @@ def add_verbs(ctx, root_map):
 
     session.commit()
     session.close()
-    print 'Skipped', len(skipped), 'roots.'
+    print('Skipped', len(skipped), 'roots.')
 
 
 def add_verbal_indeclinables(ctx, root_map):
@@ -339,7 +340,7 @@ def add_participle_stems(ctx, root_map):
 
     session.commit()
     session.close()
-    print 'Skipped', len(skipped), 'roots.'
+    print('Skipped', len(skipped), 'roots.')
 
 
 def add_nominal_endings(ctx):
@@ -541,7 +542,7 @@ def run(ctx):
     # add_irregular_nouns(ctx)
     # add_irregular_adjectives(ctx)
 
-    print 'Done.'
+    print('Done.')
 
 
 if __name__ == '__main__':

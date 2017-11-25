@@ -22,7 +22,7 @@ setup(
     keywords='sanskrit',
 
     packages=find_packages(exclude=['docs', 'test*']),
-    install_requires=['sqlalchemy >= 0.7'],
+    install_requires=['sqlalchemy >= 0.7', 'future'],
     extras_require={
         'dev': ['pytest'],
         'test': ['pytest'],

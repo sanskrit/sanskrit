@@ -8,6 +8,7 @@
     :license: MIT
 """
 
+from builtins import object
 import pytest
 
 from sanskrit import Context
@@ -38,7 +39,7 @@ def simple_splitter():
     ])
 
 
-class TestJoiner:
+class TestJoiner(object):
     EXTERNAL_JOINER_TESTS = [
         # Basic
         (('tasya', 'icCA'), 'tasyecCA'),
@@ -79,7 +80,7 @@ class TestJoiner:
         assert Joiner.internal_retroflex(before) == after
 
 
-class TestSpliter:
+class TestSpliter(object):
     # "splits" blows up quickly, so these tokens are artificially small:
     SPLITTER_TESTS = [
         ('yAH', ['ya,aH', 'ya,AH'] +

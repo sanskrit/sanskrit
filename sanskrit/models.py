@@ -7,6 +7,7 @@
     :license: MIT
 """
 from __future__ import division
+from builtins import next, zip, range
 import collections
 import itertools
 import math
@@ -16,7 +17,7 @@ import math
 SEQUENCE_BOUNDARY = '__SEQ_BOUNDARY__'
 
 
-class SequenceModel:
+class SequenceModel(object):
 
     """A bigram model over sequences of events."""
 
@@ -27,10 +28,10 @@ class SequenceModel:
 
     def _iter_ngrams(self, seq, size):
         iters = itertools.tee(seq, size)
-        for i in xrange(1, size):
+        for i in range(1, size):
             for each in iters[i:]:
                 next(each, None)
-        return itertools.izip(*iters)
+        return zip(*iters)
 
     def insert(self, seq):
         """
@@ -56,7 +57,7 @@ class SequenceModel:
         return math.log(numerator / denominator)
 
 
-class FeatureModel:
+class FeatureModel(object):
 
     """Assigns a score using a small set of features."""
 

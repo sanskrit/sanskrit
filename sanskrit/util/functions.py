@@ -7,6 +7,7 @@ Various helper functions.
 :license: MIT and BSD
 """
 
+from __future__ import print_function
 import csv
 
 
@@ -24,22 +25,22 @@ def read_csv(filename):
 def heading(s, char='-'):
     """Print `s` as a heading. This is used to update the user during a
     long-running function."""
-    print
-    print s
-    print char * len(s)
+    print()
+    print(s)
+    print(char * len(s))
 
 
 def tick(s):
     """Print `s` as a list item. This is used to update the user during a
     long-running function.
     """
-    print ' -', s
+    print(' -', s)
 
 
 def tick_every(n):
     def func(x):
         func.i += 1
         if func.i % n == 0:
-            print func.i, ':', x
+            print(func.i, ':', x)
     func.i = 0
     return func

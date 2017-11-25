@@ -13,6 +13,8 @@
 """
 
 #: All legal sounds, including anusvara, ardhachandra, and Vedic `'L'`.
+from builtins import map
+from builtins import zip
 ALL_SOUNDS = frozenset("aAiIuUfFxXeEoOMHkKgGNcCjJYwWqQRtTdDnpPbBmyrlLvSzsh'~")
 
 #: All legal tokens, including sounds, punctuation (`'|'`), and whitespace.

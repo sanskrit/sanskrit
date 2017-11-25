@@ -9,6 +9,7 @@ Tests Sanskrit transliteration.
 """
 
 from __future__ import unicode_literals
+from __future__ import print_function
 
 from sanskrit.transliterate import sanscript as S
 from . import TestCase
@@ -149,9 +150,9 @@ class GeneralTestCase(SanscriptTestCase):
         scheme corresponds to a subset of Devanagari."""
         dev = S.SCHEMES[S.DEVANAGARI]
         groups = set(dev.keys())
-        for name, scheme in S.SCHEMES.items():
+        for name, scheme in list(S.SCHEMES.items()):
             for group in scheme:
-                print name, group
+                print(name, group)
                 self.assertIn(group, groups)
                 self.assertEqual(len(scheme[group]), len(dev[group]))
 

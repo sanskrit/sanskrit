@@ -6,12 +6,16 @@
 
     :license: MIT
 """
+from __future__ import print_function
+from builtins import input
+from builtins import range
+from builtins import object
 import re
 
 from sanskrit import tagger
 
 
-class Color:
+class Color(object):
 
     """Terminal colors. Unix systems only."""
 
@@ -43,7 +47,7 @@ def print_with_highlighted_chunk(segment, n):
             if i == n:
                 s = chunks[L][c]
                 chunks[L][c] = with_color(s, Color.RED + Color.BOLD)
-                print '\n'.join([' '.join(x) for x in chunks])
+                print('\n'.join([' '.join(x) for x in chunks]))
                 return
             else:
                 i += 1
@@ -54,7 +58,7 @@ def print_numbered_items(items, ctx):
     for i, item in enumerate(items):
         hrf = item.human_readable_form(ctx)
         pos = hrf[1]
-        print '{} : {}'.format((i + 1), hrf)
+        print('{} : {}'.format((i + 1), hrf))
 
 
 def int_or_none(x, limit):
@@ -73,20 +77,20 @@ def int_or_none(x, limit):
 
 
 def print_help():
-    print with_color('1  : get alternatives for form 1', Color.GREEN)
-    print with_color('s  : re-split the chunk', Color.GREEN)
-    print with_color('pc : previous chunk', Color.GREEN)
-    print with_color('nc : next chunk', Color.GREEN)
-    print with_color('q  : quit', Color.GREEN)  # TODO: save and quit
-    print with_color('?  : help', Color.GREEN)
+    print(with_color('1  : get alternatives for form 1', Color.GREEN))
+    print(with_color('s  : re-split the chunk', Color.GREEN))
+    print(with_color('pc : previous chunk', Color.GREEN))
+    print(with_color('nc : next chunk', Color.GREEN))
+    print(with_color('q  : quit', Color.GREEN))  # TODO: save and quit
+    print(with_color('?  : help', Color.GREEN))
 
 
 def segment_repl(ctx, segment):
-    print with_color('*' + '-' * 50, Color.GREEN + Color.BOLD)
-    print with_color('*', Color.GREEN + Color.BOLD)
-    print with_color('* Interactive Sanskrit tagger', Color.GREEN + Color.BOLD)
-    print with_color('*', Color.GREEN + Color.BOLD)
-    print with_color('*' + '-' * 50, Color.GREEN + Color.BOLD)
+    print(with_color('*' + '-' * 50, Color.GREEN + Color.BOLD))
+    print(with_color('*', Color.GREEN + Color.BOLD))
+    print(with_color('* Interactive Sanskrit tagger', Color.GREEN + Color.BOLD))
+    print(with_color('*', Color.GREEN + Color.BOLD))
+    print(with_color('*' + '-' * 50, Color.GREEN + Color.BOLD))
     print_help()
 
     t = tagger.Tagger(ctx)
@@ -106,14 +110,14 @@ def segment_repl(ctx, segment):
             index += 1
             continue
 
-        print with_color('~' * 50, Color.BLUE + Color.BOLD)
-        print
+        print(with_color('~' * 50, Color.BLUE + Color.BOLD))
+        print()
         print_with_highlighted_chunk(segment, index)
-        print
+        print()
         print_numbered_items(items_for_chunk[index], ctx)
-        print
+        print()
 
-        command = raw_input(": ")
+        command = input(": ")
         int_command = int_or_none(command, limit=len(items_for_chunk[index]))
 
         # All OK
@@ -133,7 +137,7 @@ def segment_repl(ctx, segment):
 
         # Bad split
         elif command == 's':
-            split = raw_input("Split: ")
+            split = input("Split: ")
             items_for_chunk[index] = list(t.tag_segment(split))
 
         # Bad form
@@ -149,22 +153,22 @@ def segment_repl(ctx, segment):
 
             choice = None
             while choice is None:
-                choice = int_or_none(raw_input('Which? : '),
+                choice = int_or_none(input('Which? : '),
                                      limit=len(candidate_items))
 
             items_for_chunk[index][int_command - 1] = candidate_items[choice - 1]
 
         else:
-            print
+            print()
             msg = "Unrecognized command '%s'. Try one of these:" % command
-            print with_color(msg, Color.BOLD + Color.GREEN)
+            print(with_color(msg, Color.BOLD + Color.GREEN))
             print_help()
 
     # All done!
     # TODO: write to file
     for i in range(n):
         for item in items_for_chunk[i]:
-            print item.human_readable_form(ctx)
+            print(item.human_readable_form(ctx))
 
 
 def run(ctx, segment):
