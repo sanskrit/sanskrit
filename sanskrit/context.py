@@ -8,6 +8,9 @@
 
     :license: MIT
 """
+from __future__ import print_function
+from past.builtins import execfile
+import six
 import imp
 import os
 
@@ -60,13 +63,13 @@ class Context(object):
         #: A :class:`~sqlalchemy.orm.session.Session` class.
         self.session = None
 
-        if isinstance(config, basestring):
+        if isinstance(config, (six.text_type, six.string_types)):
             filepath = config
             config = imp.new_module('config')
             config.__file__ = filepath
             try:
                 execfile(filepath, config.__dict__)
-            except IOError, e:
+            except IOError as e:
                 e.strerror = 'Cannot load config file: %s' % e.strerror
                 raise
 
@@ -129,7 +132,7 @@ class Context(object):
         metadata.create_all(self.engine)
         for name in metadata.sorted_tables:
             if name not in extant:
-                print '  [ c ] {0}'.format(name)
+                print('  [ c ] {0}'.format(name))
 
     def drop_all(self):
         """Drop all tables defined in `sanskrit.schema`."""

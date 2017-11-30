@@ -47,12 +47,15 @@ These variables are documented below.
 .. _IAST: http://en.wikipedia.org/wiki/IAST
 """
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, division, absolute_import, print_function
+import six
 
 # Brahmic schemes
 # ---------------
 #: Internal name of Bengali. Bengali ``ba`` and ``va`` are both rendered
 #: as `ব`.
+from builtins import zip
+from builtins import object
 BENGALI = 'bengali'
 
 #: Internal name of Devanagari.
@@ -185,7 +188,7 @@ def _roman(data, scheme_map, **kw):
     suspend_on = kw.pop('suspend_on', set())
     suspend_off = kw.pop('suspend_off', set())
     if kw:
-        raise TypeError('Unexpected keyword argument %s' % kw.keys()[0])
+        raise TypeError('Unexpected keyword argument %s' % list(kw.keys())[0])
 
     buf = []
     i = 0
@@ -342,7 +345,7 @@ def transliterate(data, _from=None, _to=None, scheme_map=None, **kw):
 
 def _setup():
     """Add a variety of default schemes."""
-    s = unicode.split
+    s = six.text_type.split
 
     SCHEMES.update({
         BENGALI: Scheme({

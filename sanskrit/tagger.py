@@ -17,7 +17,7 @@
 from sanskrit import analyze, models, sandhi, schema, util
 
 
-class NonForm:
+class NonForm(object):
 
     """Wraps a chunk that couldn't be parsed by the :class:`Tagger`."""
 
@@ -28,7 +28,7 @@ class NonForm:
         return "NonForm('{}')".format(self.name)
 
 
-class TaggedItem:
+class TaggedItem(object):
 
     """Associates a linguistic form with a specific chunk and segment."""
 
@@ -93,7 +93,7 @@ class TaggedItem:
             return (form.name, 'perfect-indeclinable', form.root.name, '')
 
 
-class Tagger:
+class Tagger(object):
 
     """The part-of-speech tagger."""
 

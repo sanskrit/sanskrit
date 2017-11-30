@@ -15,7 +15,7 @@
 
     :license: MIT and BSD
 """
-
+from __future__ import print_function
 from . import util
 from .schema import NominalEnding
 

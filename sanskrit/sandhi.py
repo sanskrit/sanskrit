@@ -8,11 +8,16 @@
     :license: MIT
 """
 
+from builtins import next
+from builtins import zip
+from builtins import range
+from builtins import object
+import six
 from . import sounds
 from .util import HashTrie
 
 
-class Exempt(unicode):
+class Exempt(six.text_type):
 
     """A helper class for marking strings as exempt from sandhi changes. To
     mark a string as exempt, just do the following::
@@ -199,7 +204,7 @@ class Splitter(object):
 
         chunk_len = len(chunk)
 
-        for i in xrange(chunk_len):
+        for i in range(chunk_len):
             # Default split: chop the chunk in half with no other changes.
             # This can yield a lot of false positives.
             chunk1, chunk2 = chunk[:i], chunk[i:]

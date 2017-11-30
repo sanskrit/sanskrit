@@ -1,2 +1,4 @@
 pytest
 sqlalchemy >= 0.7
+future
+six

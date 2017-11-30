@@ -17,12 +17,17 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
     ],
     keywords='sanskrit',
 
     packages=find_packages(exclude=['docs', 'test*']),
-    install_requires=['sqlalchemy >= 0.7'],
+    install_requires=['sqlalchemy >= 0.7', 
+                      'future',
+                      'six'],
     extras_require={
         'dev': ['pytest'],
         'test': ['pytest'],

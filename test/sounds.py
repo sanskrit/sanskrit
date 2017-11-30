@@ -8,6 +8,7 @@
     :license: MIT and BSD
 """
 
+from builtins import zip
 from sanskrit import sounds
 from . import TestCase
 
@@ -65,16 +66,16 @@ class TransformTestCase(TestCase):
 
     def test_guna(self):
         func = sounds.guna
-        data = zip('a A i I u U  f  F  x  X e E o O'.split(),
-                   'a A e e o o ar ar al al e E o O'.split())
+        data = list(zip('a A i I u U  f  F  x  X e E o O'.split(),
+                   'a A e e o o ar ar al al e E o O'.split()))
 
         for data, output in data:
             self.assertEqual(output, func(data))
 
     def test_vrddhi(self):
         func = sounds.vrddhi
-        data = zip('a A i I u U  f  F  x  X e E o O'.split(),
-                   'A A E E O O Ar Ar Al Al E E O O'.split())
+        data = list(zip('a A i I u U  f  F  x  X e E o O'.split(),
+                   'A A E E O O Ar Ar Al Al E E O O'.split()))
 
         for data, output in data:
             self.assertEqual(output, func(data))
